@@ -1,759 +1,764 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DayZero Intelligence | Analytics Platform with Instant Value</title>
-    <style>
-        :root {
-            --primary: #0066ff;
-            --secondary: #00d4ff;
-            --dark: #0a0e27;
-            --dark-card: #141829;
-            --text: #e8eaf0;
-            --text-dim: #8a8ea8;
-            --success: #00d97e;
-            --warning: #ffd93d;
-            --danger: #ff4757;
-            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — Day Zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#0B0E13;
+    --panel:#141A22;
+    --panel-2:#1B2430;
+    --line:#29333F;
+    --ink-hi:#ECF1F6;
+    --ink-mid:#9AA7B4;
+    --ink-lo:#5E6B78;
+    --teal:#34D8C4;
+    --teal-dim:#15564F;
+    --signal:#FF8A3D;
+    --signal-dim:#5E3315;
+    --good:#46C97E;
+    --bad:#F2685B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--canvas);
+    color:var(--ink-hi);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  .mono{font-family:"IBM Plex Mono",monospace}
+  .display{font-family:"Space Grotesk",sans-serif}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  /* shell */
+  .app{min-height:100%;display:flex;flex-direction:column}
+  .bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:rgba(11,14,19,.85);backdrop-filter:blur(8px);z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .glyph{
+    width:24px;height:24px;border-radius:6px;position:relative;flex:none;
+    background:linear-gradient(135deg,var(--teal),#1FA796);
+    box-shadow:0 0 0 1px rgba(52,216,196,.3), 0 0 18px rgba(52,216,196,.25);
+  }
+  .glyph::after{content:"";position:absolute;inset:8px;border-radius:2px;background:var(--canvas)}
+  .brand b{font-family:"Space Grotesk";font-weight:700;letter-spacing:.5px;font-size:15px}
+  .brand span{color:var(--ink-lo);font-size:12px;letter-spacing:.3px}
+  .clock{display:flex;align-items:center;gap:9px}
+  .clock .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal)}
+  .clock .t{font-family:"IBM Plex Mono";font-size:13px;color:var(--ink-mid)}
+  .clock .t b{color:var(--ink-hi);font-weight:500}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+  /* body grid */
+  .grid{flex:1;display:grid;grid-template-columns:232px 1fr;max-width:1180px;width:100%;margin:0 auto}
+  /* timeline spine */
+  .spine{padding:34px 0 34px 28px;border-right:1px solid var(--line)}
+  .step{position:relative;padding:0 0 30px 26px}
+  .step:last-child{padding-bottom:0}
+  .step::before{content:"";position:absolute;left:4px;top:18px;bottom:-4px;width:1px;background:var(--line)}
+  .step:last-child::before{display:none}
+  .node{position:absolute;left:0;top:2px;width:9px;height:9px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);transition:.4s}
+  .step.done .node{background:var(--teal);border-color:var(--teal);box-shadow:0 0 10px rgba(52,216,196,.5)}
+  .step.active .node{background:var(--signal);border-color:var(--signal);box-shadow:0 0 12px rgba(255,138,61,.6)}
+  .step.done::before{background:linear-gradient(var(--teal),var(--line))}
+  .step .k{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.5px;color:var(--ink-lo);text-transform:uppercase}
+  .step .lbl{font-family:"Space Grotesk";font-weight:500;font-size:14.5px;color:var(--ink-mid);margin-top:3px;transition:.3s}
+  .step.active .lbl,.step.done .lbl{color:var(--ink-hi)}
+  .step .ts{font-family:"IBM Plex Mono";font-size:11px;color:var(--teal);margin-top:3px;opacity:0;transition:.4s}
+  .step.done .ts,.step.active .ts{opacity:1}
 
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 14, 39, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            padding: 1rem 0;
-        }
+  /* stage area */
+  .stage{padding:40px 44px 80px;min-width:0}
+  .scene{display:none;animation:rise .5s ease both}
+  .scene.on{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  .eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--signal)}
+  h1{font-family:"Space Grotesk";font-weight:700;font-size:30px;line-height:1.12;letter-spacing:-.5px;margin:10px 0 12px;max-width:18ch}
+  .lede{color:var(--ink-mid);font-size:15.5px;max-width:54ch}
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+  /* connectors */
+  .ctrack{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:30px 0 26px}
+  @media(max-width:760px){.ctrack{grid-template-columns:1fr}}
+  .ctitle{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .ctitle .pill{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);letter-spacing:.5px}
+  .pill.now{color:var(--teal);border-color:var(--teal-dim)}
+  .pill.ramp{color:var(--signal);border-color:var(--signal-dim)}
+  .conn{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer;transition:.18s;user-select:none}
+  .conn:hover{border-color:#3a4756;background:var(--panel-2)}
+  .conn.sel{border-color:var(--teal);background:linear-gradient(var(--panel-2),var(--panel))}
+  .conn .ico{width:34px;height:34px;border-radius:8px;flex:none;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:700;font-size:13px;background:var(--panel-2);border:1px solid var(--line)}
+  .conn.sel .ico{background:var(--teal);color:#04211d;border-color:var(--teal)}
+  .conn .nm{font-size:14px;font-weight:500}
+  .conn .sub{font-size:11.5px;color:var(--ink-lo);font-family:"IBM Plex Mono"}
+  .conn .chk{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;transition:.18s}
+  .conn.sel .chk{background:var(--teal);border-color:var(--teal)}
+  .conn.sel .chk::after{content:"";width:5px;height:9px;border:2px solid #04211d;border-top:0;border-left:0;transform:rotate(42deg) translateY(-1px)}
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
+  /* buttons */
+  .actions{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+  .btn{font-family:"Space Grotesk";font-weight:500;font-size:14.5px;border:0;border-radius:10px;padding:13px 22px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:9px}
+  .btn.primary{background:var(--signal);color:#1a0c02}
+  .btn.primary:hover{filter:brightness(1.08);box-shadow:0 6px 22px rgba(255,138,61,.3)}
+  .btn.primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+  .btn.ghost{background:transparent;color:var(--ink-mid);border:1px solid var(--line)}
+  .btn.ghost:hover{color:var(--ink-hi);border-color:#3a4756}
+  .hint{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-lo)}
 
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            transition: color 0.3s;
-            font-weight: 500;
-        }
+  /* backfill */
+  .meters{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0 24px}
+  @media(max-width:760px){.meters{grid-template-columns:1fr}}
+  .meter{border:1px solid var(--line);border-radius:13px;padding:20px;background:var(--panel)}
+  .meter .v{font-family:"Space Grotesk";font-weight:700;font-size:34px;letter-spacing:-1px}
+  .meter .l{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);margin-top:4px}
+  .progress{height:5px;border-radius:4px;background:var(--panel-2);overflow:hidden;margin-top:30px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-dim),var(--teal));transition:width .25s}
+  .feed{margin-top:24px;display:flex;flex-direction:column;gap:9px}
+  .feed .row{display:flex;align-items:center;gap:11px;font-family:"IBM Plex Mono";font-size:12.5px;color:var(--ink-mid);opacity:0;transform:translateX(-8px);transition:.4s}
+  .feed .row.in{opacity:1;transform:none}
+  .feed .row .tick{color:var(--teal)}
 
-        .nav-links a:hover {
-            color: var(--secondary);
-        }
+  /* audit findings */
+  .findings{display:flex;flex-direction:column;gap:13px;margin:30px 0 8px}
+  .find{display:flex;gap:15px;padding:17px 18px;border:1px solid var(--line);border-radius:13px;background:var(--panel);opacity:0;transform:translateY(10px)}
+  .find.in{animation:rise .5s ease both}
+  .find .sev{width:3px;border-radius:3px;flex:none;align-self:stretch}
+  .sev.high{background:var(--bad)}.sev.mid{background:var(--signal)}.sev.bench{background:var(--teal)}
+  .find .body h3{font-family:"Space Grotesk";font-weight:500;font-size:16px;margin-bottom:3px}
+  .find .body p{font-size:13.5px;color:var(--ink-mid)}
+  .find .tag{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:7px}
+  .find .num{margin-left:auto;text-align:right;flex:none}
+  .find .num b{font-family:"Space Grotesk";font-weight:700;font-size:22px;display:block;letter-spacing:-.5px}
+  .find .num.h b{color:var(--bad)}.find .num.t b{color:var(--teal)}
+  .find .num small{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--ink-lo)}
 
-        /* Hero Section */
-        .hero {
-            padding: 120px 2rem 80px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+  /* platform grouping */
+  .grouphead{display:flex;align-items:center;gap:12px;margin:28px 0 14px}
+  .grouphead.first{margin-top:30px}
+  .pf{display:inline-flex;align-items:center;gap:9px;font-family:"Space Grotesk";font-weight:500;font-size:14.5px;color:var(--ink-hi)}
+  .pf .sq{width:21px;height:21px;border-radius:6px;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:700;font-size:12px;color:#fff;flex:none}
+  .pf.g .sq{background:#4285F4}
+  .pf.m .sq{background:#1877F2}
+  .pf.x .sq{background:var(--teal);color:#04211d;font-size:14px}
+  .grouphead .rule{flex:1;height:1px;background:var(--line)}
+  .grouphead .ghnote{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);flex:none}
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(0, 102, 255, 0.15), transparent);
-            border-radius: 50%;
-            z-index: 0;
-        }
+  /* fields-used row */
+  .fieldrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:11px}
+  .fieldrow .fl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-right:1px}
+  .fchip{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--ink-mid);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .fchip i{font-style:normal;color:var(--ink-lo)}
 
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+  /* ===== pre-connect: brand brief ===== */
+  .twocol{display:grid;grid-template-columns:.82fr 1.18fr;gap:26px;margin-top:28px;align-items:start}
+  @media(max-width:860px){.twocol{grid-template-columns:1fr;gap:20px}}
+  .pcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:22px}
+  .fieldgrp{margin-bottom:18px}
+  .fieldgrp:last-child{margin-bottom:0}
+  .flbl{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-lo);margin:0 0 8px;display:block}
+  .tin{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--ink-hi);font-family:"IBM Plex Sans";font-size:14px;outline:none;transition:.15s}
+  .tin:focus{border-color:var(--teal)}
+  .urlpre{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);overflow:hidden;transition:.15s}
+  .urlpre:focus-within{border-color:var(--teal)}
+  .urlpre .pfx{font-family:"IBM Plex Mono";font-size:13px;color:var(--ink-lo);padding-left:13px}
+  .urlpre input{border:0;background:transparent;flex:1;padding:11px 13px 11px 2px;color:var(--ink-hi);font-family:"IBM Plex Mono";font-size:13px;outline:none}
+  .compinputs{display:flex;flex-direction:column;gap:8px}
+  .compinputs .tin{font-size:13.5px}
+  .optnote{font-family:"IBM Plex Mono";font-size:10px;color:var(--ink-lo);margin-top:8px;line-height:1.5}
 
-        .hero h1 {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.2;
-        }
+  /* output side */
+  .outempty{border:1px dashed var(--line);border-radius:14px;padding:46px 26px;text-align:center}
+  .outempty .ic{width:40px;height:40px;border-radius:10px;margin:0 auto 14px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-lo);font-family:"Space Grotesk";font-weight:700}
+  .outempty p{color:var(--ink-lo);font-size:13.5px;max-width:34ch;margin:0 auto}
+  .assembling{display:none}
+  .assembling.on{display:block}
+  .brief{display:none}
+  .brief.on{display:block;animation:rise .5s ease both}
+  .brief .bh{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .brief .bh h2{font-family:"Space Grotesk";font-weight:700;font-size:18px}
+  .aibadge{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--signal);border:1px solid var(--signal-dim);border-radius:20px;padding:2px 9px}
+  .brief .bsub{color:var(--ink-mid);font-size:13px;margin-bottom:6px}
+  .briefsec{padding:15px 0;border-bottom:1px solid var(--line)}
+  .briefsec:last-child{border-bottom:0;padding-bottom:4px}
+  .briefsec .k{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:7px;display:flex;align-items:center;gap:8px}
+  .briefsec .k .e{margin-left:auto;color:var(--teal);cursor:pointer;text-transform:none;letter-spacing:0;font-size:11px}
+  .editable{color:var(--ink-hi);font-size:14.5px;line-height:1.55;outline:none;border-radius:7px;padding:3px 6px;margin:-3px -6px;transition:.15s;cursor:text}
+  .editable:hover{background:var(--panel-2)}
+  .editable:focus{background:var(--panel-2);box-shadow:0 0 0 1px var(--teal)}
+  .vchips{display:flex;flex-wrap:wrap;gap:7px}
+  .vchip{font-family:"IBM Plex Sans";font-weight:500;font-size:12.5px;color:var(--ink-hi);background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:4px 12px}
 
-        .hero p {
-            font-size: 1.5rem;
-            color: var(--text-dim);
-            margin-bottom: 3rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
+  /* competitor teardown */
+  .teardown{margin-top:22px}
+  .comp{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:15px;margin-bottom:11px}
+  .comp .ch{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .comp .nm{font-family:"Space Grotesk";font-weight:500;font-size:15px}
+  .comp .stat{font-family:"IBM Plex Mono";font-size:11px;color:var(--teal)}
+  .comp .src{font-family:"IBM Plex Mono";font-size:10px;color:var(--ink-lo);margin-left:auto;border:1px solid var(--line);border-radius:20px;padding:2px 8px}
+  .ads{display:flex;gap:7px;margin-bottom:10px}
+  .adthumb{flex:1;height:44px;border-radius:7px;border:1px solid var(--line);background:linear-gradient(135deg,var(--panel-2),#0e131a);position:relative;overflow:hidden}
+  .adthumb::before{content:"";position:absolute;left:8px;right:8px;top:10px;height:5px;border-radius:3px;background:rgba(154,167,180,.22)}
+  .adthumb::after{content:"";position:absolute;left:8px;width:55%;top:22px;height:5px;border-radius:3px;background:rgba(154,167,180,.14)}
+  .angle{font-size:13px;color:var(--ink-mid)}
+  .angle b{color:var(--ink-hi);font-weight:500}
+  .whitespace{margin-top:6px;border:1px solid var(--teal-dim);background:rgba(52,216,196,.07);border-radius:12px;padding:14px 16px}
+  .whitespace .k{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);margin-bottom:5px}
+  .whitespace p{font-size:13.5px;color:var(--ink-hi)}
+  .objline{margin-top:18px;font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 14px;overflow-x:auto;white-space:nowrap;line-height:1.7}
+  .objline b{color:var(--teal)}
+  .objline .ky{color:var(--signal)}
 
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+  /* decisions */
+  .decks{display:flex;flex-direction:column;gap:15px;margin:28px 0 10px}
+  .deck{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;transition:.3s}
+  .deck .top{display:flex;align-items:flex-start;gap:16px;padding:20px 20px 16px}
+  .deck .idx{font-family:"IBM Plex Mono";font-size:12px;color:var(--signal);padding-top:3px}
+  .deck .main{flex:1;min-width:0}
+  .deck h3{font-family:"Space Grotesk";font-weight:500;font-size:17.5px;line-height:1.25;margin-bottom:6px}
+  .deck .why{font-size:13.5px;color:var(--ink-mid)}
+  .conf{display:flex;align-items:center;gap:9px;margin-top:13px}
+  .conf .track{width:120px;height:5px;border-radius:4px;background:var(--panel-2);overflow:hidden}
+  .conf .track i{display:block;height:100%;background:var(--teal)}
+  .conf .lab{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-mid)}
+  .deck .ctl{display:flex;gap:10px;padding:0 20px 20px;align-items:center}
+  .mini{font-family:"Space Grotesk";font-weight:500;font-size:13.5px;border-radius:9px;padding:10px 18px;cursor:pointer;border:0;transition:.18s}
+  .mini.act{background:var(--signal);color:#1a0c02}
+  .mini.act:hover{filter:brightness(1.08)}
+  .mini.dis{background:transparent;color:var(--ink-lo);border:1px solid var(--line)}
+  .mini.dis:hover{color:var(--ink-mid)}
+  .deck.resolved{border-color:var(--teal-dim);background:linear-gradient(var(--panel-2),var(--panel))}
+  .deck.resolved .top,.deck.resolved .ctl{opacity:.45}
+  .resbar{display:none;align-items:center;gap:11px;padding:14px 20px;border-top:1px solid var(--teal-dim);background:rgba(52,216,196,.06);font-size:13.5px}
+  .deck.resolved .resbar{display:flex;animation:rise .4s ease both}
+  .resbar .tick{width:20px;height:20px;border-radius:50%;background:var(--teal);display:grid;place-items:center;flex:none}
+  .resbar .tick::after{content:"";width:5px;height:9px;border:2px solid #04211d;border-top:0;border-left:0;transform:rotate(42deg) translateY(-1px)}
+  .resbar b{font-family:"Space Grotesk";font-weight:500}
+  .resbar .heal{margin-left:auto;font-family:"IBM Plex Mono";font-size:11px;color:var(--teal)}
+  .spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#1a0c02;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
 
-        .btn {
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-        }
+  .summary{margin-top:30px;padding:22px;border:1px dashed var(--line);border-radius:13px;background:var(--panel);display:none}
+  .summary.on{display:block;animation:rise .5s ease both}
+  .summary .big{font-family:"Space Grotesk";font-weight:700;font-size:21px;letter-spacing:-.4px;margin-bottom:6px}
+  .summary p{color:var(--ink-mid);font-size:14px;max-width:60ch}
+  .summary .restart{margin-top:16px}
 
-        .btn-primary {
-            background: var(--gradient);
-            color: white;
-            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
-        }
+  .foot{padding:16px 24px;border-top:1px solid var(--line);text-align:center;font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);letter-spacing:.5px}
 
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 102, 255, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Features Section */
-        .section {
-            padding: 80px 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .section-header h2 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .section-header p {
-            font-size: 1.25rem;
-            color: var(--text-dim);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-
-        .feature-card {
-            background: var(--dark-card);
-            padding: 2.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 102, 255, 0.2);
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card p {
-            color: var(--text-dim);
-            line-height: 1.8;
-        }
-
-        /* Timeline Section */
-        .timeline {
-            position: relative;
-            padding-left: 3rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: var(--gradient);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 3rem;
-            padding: 2rem;
-            background: var(--dark-card);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .timeline-marker {
-            position: absolute;
-            left: -3.6rem;
-            top: 2rem;
-            width: 20px;
-            height: 20px;
-            background: var(--primary);
-            border-radius: 50%;
-            border: 3px solid var(--dark);
-        }
-
-        .timeline-time {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(0, 102, 255, 0.2);
-            border-radius: 20px;
-            font-weight: 600;
-            color: var(--secondary);
-            margin-bottom: 1rem;
-        }
-
-        .timeline-item h3 {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .timeline-item ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .timeline-item li {
-            padding: 0.5rem 0;
-            padding-left: 1.5rem;
-            position: relative;
-            color: var(--text-dim);
-        }
-
-        .timeline-item li::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            color: var(--secondary);
-        }
-
-        /* Stats Section */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 2rem;
-            background: var(--dark-card);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 700;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: var(--text-dim);
-            font-size: 1.1rem;
-        }
-
-        /* Platform Cards */
-        .platform-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .platform-card {
-            background: var(--dark-card);
-            padding: 2.5rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .platform-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .platform-logo {
-            width: 50px;
-            height: 50px;
-            background: var(--gradient);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .platform-header h3 {
-            font-size: 1.75rem;
-        }
-
-        .insight-list {
-            list-style: none;
-        }
-
-        .insight-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--primary);
-        }
-
-        .insight-item h4 {
-            margin-bottom: 0.5rem;
-            color: var(--secondary);
-        }
-
-        .insight-item p {
-            color: var(--text-dim);
-            font-size: 0.95rem;
-        }
-
-        .api-fields {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .api-field {
-            background: rgba(0, 102, 255, 0.2);
-            padding: 0.3rem 0.8rem;
-            border-radius: 5px;
-            font-family: 'Monaco', monospace;
-            font-size: 0.85rem;
-            color: var(--secondary);
-        }
-
-        /* Footer */
-        footer {
-            background: var(--dark-card);
-            padding: 3rem 2rem;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            margin-top: 80px;
-        }
-
-        footer p {
-            color: var(--text-dim);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero p {
-                font-size: 1.2rem;
-            }
-
-            .section-header h2 {
-                font-size: 2rem;
-            }
-
-            .platform-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .nav-links {
-                gap: 1rem;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeInUp 0.6s ease-out;
-        }
-    </style>
+  @media(max-width:680px){
+    .grid{grid-template-columns:1fr}
+    .spine{display:none}
+    .stage{padding:28px 20px 60px}
+    h1{font-size:24px}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <div class="logo">DayZero Intelligence</div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#timeline">Timeline</a></li>
-                <li><a href="#platforms">Platforms</a></li>
-                <li><a href="documentation.html">Documentation</a></li>
-            </ul>
-        </div>
+<div class="app">
+  <div class="bar">
+    <div class="brand">
+      <div class="glyph"></div>
+      <div>
+        <b>SIGNAL</b> <span>· the decision layer for MCI</span>
+      </div>
+    </div>
+    <div class="clock">
+      <span class="dot"></span>
+      <span class="t"><span id="clkLabel" style="display:none">elapsed </span><b id="clk">pre-connect</b></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <nav class="spine" id="spine">
+      <div class="step active" data-step="0"><span class="node"></span><div class="k">01</div><div class="lbl">Brand brief</div><div class="ts mono" id="tsBrief" style="color:var(--signal)">pre-connect</div></div>
+      <div class="step" data-step="1"><span class="node"></span><div class="k">02</div><div class="lbl">Connect</div><div class="ts mono" id="tsConnect"></div></div>
+      <div class="step" data-step="2"><span class="node"></span><div class="k">03</div><div class="lbl">Backfill 30 days</div><div class="ts mono" id="tsBackfill"></div></div>
+      <div class="step" data-step="3"><span class="node"></span><div class="k">04</div><div class="lbl">Instant audit</div><div class="ts mono" id="tsAudit"></div></div>
+      <div class="step" data-step="4"><span class="node"></span><div class="k">05</div><div class="lbl">First decisions</div><div class="ts mono" id="tsDecide"></div></div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-content fade-in">
-            <h1>Intelligence Before Data</h1>
-            <p>Transform your analytics platform with day-zero value. Deliver actionable insights in under 2 hours, not quarters.</p>
-            <div class="cta-buttons">
-                <a href="documentation.html" class="btn btn-primary">View Documentation</a>
-                <a href="#timeline" class="btn btn-secondary">See How It Works</a>
-            </div>
-        </div>
-    </section>
+    <main class="stage">
 
-    <!-- Stats -->
-    <section class="section">
-        <div class="stats fade-in">
-            <div class="stat-card">
-                <div class="stat-number">&lt;2hrs</div>
-                <div class="stat-label">Time to First Value</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">30d</div>
-                <div class="stat-label">Instant Backfill</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">10+</div>
-                <div class="stat-label">Insights Per Platform</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">0</div>
-                <div class="stat-label">Data Required to Start</div>
-            </div>
-        </div>
-    </section>
+      <!-- STAGE 0: BRAND BRIEF (pre-connect) -->
+      <section class="scene on" id="sb">
+        <div class="eyebrow">Before you connect anything</div>
+        <h1>Tell us who you are. We'll understand your brand before you give us a single number.</h1>
+        <p class="lede">No data needed yet. From your site and your competitors' public ads, Signal drafts a brand brief — then conditions every decision and every generated asset on it.</p>
 
-    <!-- Features Section -->
-    <section id="features" class="section">
-        <div class="section-header fade-in">
-            <h2>Key Differentiators</h2>
-            <p>Seven capabilities that make this an intelligence layer, not just another analytics dashboard</p>
-        </div>
+        <div class="twocol">
+          <div class="pcard">
+            <div class="fieldgrp">
+              <label class="flbl">Your website</label>
+              <div class="urlpre"><span class="pfx">https://</span><input id="urlIn" value="loomwear.com" spellcheck="false"></div>
+            </div>
+            <div class="fieldgrp">
+              <label class="flbl">Your competitors · 3–5</label>
+              <div class="compinputs">
+                <input class="tin" value="Verday" spellcheck="false">
+                <input class="tin" value="Kindred Cloth" spellcheck="false">
+                <input class="tin" value="Northbound" spellcheck="false">
+              </div>
+              <div class="optnote">We'll pull their live ads from the Meta Ad Library &amp; Google Ads Transparency Center — both public, no account access.</div>
+            </div>
+            <div class="fieldgrp">
+              <label class="flbl">Mission, in one line <span style="color:var(--ink-lo)">· optional</span></label>
+              <input class="tin" placeholder="Leave blank — we'll draft it from your site" spellcheck="false">
+            </div>
+            <div class="actions" style="margin-top:20px">
+              <button class="btn primary" id="briefBtn">Build my brand brief</button>
+            </div>
+          </div>
 
-        <div class="features-grid">
-            <div class="feature-card fade-in">
-                <div class="feature-icon">⚡</div>
-                <h3>Day-Zero Value</h3>
-                <p>Intelligence before data ingestion. Deliver insights from brand brief and competitor analysis before any client data is connected.</p>
+          <div>
+            <!-- empty state -->
+            <div class="outempty" id="outEmpty">
+              <div class="ic">≋</div>
+              <p>Your brand brief and a competitor ad teardown will assemble here — built from public sources, before any data is ingested.</p>
             </div>
 
-            <div class="feature-card fade-in">
-                <div class="feature-icon">🎯</div>
-                <h3>Action Layer</h3>
-                <p>One-click decisions with confidence scores. Not just "here's what's wrong" but "want me to fix it?" with Act buttons that resolve in place.</p>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-icon">🔄</div>
-                <h3>Self-Healing</h3>
-                <p>Automated fixes for config gaps. Detect tracking issues, CAPI misconfigurations, and other setup problems, then close them automatically.</p>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-icon">🔍</div>
-                <h3>Platform Expertise</h3>
-                <p>Different failure modes for Google vs Meta. Google's problems are targeting hygiene; Meta's are signal and creative. The system knows the difference.</p>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-icon">📊</div>
-                <h3>Auditable Intelligence</h3>
-                <p>Every insight traceable to specific API fields. Show exactly which metrics.conversions, frequency, or cost_micros fields produced each finding.</p>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-icon">🎨</div>
-                <h3>Brand-Conditioned</h3>
-                <p>Mission and positioning inform all recommendations. The AI understands your brand voice, differentiation, and audience before making suggestions.</p>
-            </div>
-
-            <div class="feature-card fade-in">
-                <div class="feature-icon">🔎</div>
-                <h3>Competitive Intelligence</h3>
-                <p>Public ad data analyzed before client connects anything. Pull competitor ads from Meta Ad Library and Google Transparency Center on day zero.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Timeline Section -->
-    <section id="timeline" class="section">
-        <div class="section-header fade-in">
-            <h2>The Complete Flow</h2>
-            <p>From zero to actionable decisions in three phases</p>
-        </div>
-
-        <div class="timeline fade-in">
-            <div class="timeline-item">
-                <div class="timeline-marker"></div>
-                <div class="timeline-time">Pre-Connect (T-0)</div>
-                <h3>Brand Intelligence First</h3>
-                <ul>
-                    <li>Client provides URL + 3-5 competitors</li>
-                    <li>AI drafts brand brief from website + public competitor ad data</li>
-                    <li>Client confirms/corrects mission, tone, positioning</li>
-                    <li>Competitor ad teardown reveals white-space opportunities</li>
-                    <li>Value delivered before timer starts</li>
-                </ul>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-marker"></div>
-                <div class="timeline-time">Day Zero (T+00:00 to T+01:40)</div>
-                <h3>Instant Quantitative Insights</h3>
-                <ul>
-                    <li><strong>Connect</strong> paid media accounts (Google Ads, Meta)</li>
-                    <li><strong>Backfill</strong> 30 days of historical data via APIs</li>
-                    <li><strong>Audit</strong> surfaces 10 platform-specific findings with source API fields</li>
-                    <li><strong>Decisions</strong> present 6 one-click actions (3 Google, 3 Meta) with confidence scores</li>
-                    <li>Value delivered in under 2 hours</li>
-                </ul>
-            </div>
-
-            <div class="timeline-item">
-                <div class="timeline-marker"></div>
-                <div class="timeline-time">Day 30+</div>
-                <h3>Compounding Intelligence</h3>
-                <ul>
-                    <li>Trend detection and forecasting as history accumulates</li>
-                    <li>Paid-plus-owned media attribution (the real moat)</li>
-                    <li>LTV-based campaign performance analysis</li>
-                    <li>Creative resonance patterns across channels</li>
-                    <li>Value compounds as owned data joins paid spend</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Platform Insights Section -->
-    <section id="platforms" class="section">
-        <div class="section-header fade-in">
-            <h2>Platform-Specific Intelligence</h2>
-            <p>10 audit findings across Google Ads and Meta, each with source API fields</p>
-        </div>
-
-        <div class="platform-grid">
-            <!-- Google Ads -->
-            <div class="platform-card fade-in">
-                <div class="platform-header">
-                    <div class="platform-logo">G</div>
-                    <h3>Google Ads</h3>
+            <!-- assembling -->
+            <div class="assembling" id="assembling">
+              <div class="pcard">
+                <div class="flbl" style="margin-bottom:14px">Assembling · public sources only</div>
+                <div class="progress"><i id="bbBar"></i></div>
+                <div class="feed" id="bbFeed" style="margin-top:18px">
+                  <div class="row"><span class="tick">✓</span> Reading loomwear.com · 38 pages</div>
+                  <div class="row"><span class="tick">✓</span> Querying Meta Ad Library · 3 competitors</div>
+                  <div class="row"><span class="tick">✓</span> Analyzing 65 live competitor ads</div>
+                  <div class="row"><span class="tick">✓</span> Drafting brand brief</div>
+                  <div class="row"><span class="tick">✓</span> Identifying creative white space</div>
                 </div>
-                <ul class="insight-list">
-                    <li class="insight-item">
-                        <h4>Conversion Tracking Gap</h4>
-                        <p>Campaign with spend but zero conversions and no linked action</p>
-                        <div class="api-fields">
-                            <span class="api-field">metrics.conversions</span>
-                            <span class="api-field">metrics.cost_micros</span>
-                            <span class="api-field">campaign.status</span>
-                            <span class="api-field">conversion_action</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>Broad Match Waste</h4>
-                        <p>Buying non-converting search terms at scale</p>
-                        <div class="api-fields">
-                            <span class="api-field">search_term_view</span>
-                            <span class="api-field">metrics.conversions</span>
-                            <span class="api-field">metrics.cost_micros</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>PMax Claiming Brand</h4>
-                        <p>Performance Max quietly inflating ROAS with branded conversions</p>
-                        <div class="api-fields">
-                            <span class="api-field">campaign_search_term_insight</span>
-                            <span class="api-field">campaign.advertising_channel_type</span>
-                            <span class="api-field">metrics.conversions</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>Lost Impression Share</h4>
-                        <p>Diagnostic context showing competitive pressure</p>
-                        <div class="api-fields">
-                            <span class="api-field">metrics.search_impression_share</span>
-                            <span class="api-field">auction_insight</span>
-                        </div>
-                    </li>
-                </ul>
+              </div>
             </div>
 
-            <!-- Meta -->
-            <div class="platform-card fade-in">
-                <div class="platform-header">
-                    <div class="platform-logo">M</div>
-                    <h3>Meta</h3>
+            <!-- result -->
+            <div class="brief" id="brief">
+              <div class="pcard">
+                <div class="bh"><h2>Brand brief</h2><span class="aibadge">AI draft · edit anything</span></div>
+                <p class="bsub">Drafted from your site &amp; public ads. Confirm or correct — your edits become the priors we check real data against.</p>
+
+                <div class="briefsec">
+                  <div class="k">Mission &amp; positioning <span class="e">edit</span></div>
+                  <div class="editable" contenteditable="true">Make sustainable basics the obvious default — well-made, transparently priced, built to outlast trends. Competes on trust and durability, not discounts.</div>
                 </div>
-                <ul class="insight-list">
-                    <li class="insight-item">
-                        <h4>CAPI Not Configured</h4>
-                        <p>Post-iOS signal loss from missing Conversions API</p>
-                        <div class="api-fields">
-                            <span class="api-field">actions.action_source</span>
-                            <span class="api-field">attribution_setting</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>Creative Fatigue</h4>
-                        <p>CTR down 41% over 14 days with climbing frequency</p>
-                        <div class="api-fields">
-                            <span class="api-field">frequency</span>
-                            <span class="api-field">inline_link_click_ctr</span>
-                            <span class="api-field">impressions</span>
-                            <span class="api-field">date_start by ad_id</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>Overlapping Ad Sets</h4>
-                        <p>Three ad sets competing in auction, driving up costs</p>
-                        <div class="api-fields">
-                            <span class="api-field">targeting</span>
-                            <span class="api-field">delivery_info.status</span>
-                            <span class="api-field">adset.name</span>
-                        </div>
-                    </li>
-                    <li class="insight-item">
-                        <h4>Audience Network Waste</h4>
-                        <p>Placement underperforming with low-quality traffic</p>
-                        <div class="api-fields">
-                            <span class="api-field">publisher_platform</span>
-                            <span class="api-field">actions</span>
-                            <span class="api-field">spend</span>
-                        </div>
-                    </li>
-                </ul>
+                <div class="briefsec">
+                  <div class="k">Tone of voice</div>
+                  <div class="vchips">
+                    <span class="vchip">Plainspoken</span><span class="vchip">Warm</span><span class="vchip">Quietly confident</span><span class="vchip">No greenwashing</span><span class="vchip">Specific over superlative</span>
+                  </div>
+                </div>
+                <div class="briefsec">
+                  <div class="k">Audience · ICP <span class="e">edit</span></div>
+                  <div class="editable" contenteditable="true">Values-driven 28–45 urban professionals who research before buying and pay more for durability and transparency.</div>
+                </div>
+                <div class="briefsec">
+                  <div class="k">Differentiation</div>
+                  <div class="editable" contenteditable="true">Radical cost transparency + a lifetime repair guarantee. The repair promise is the sharpest, least-used angle available to you.</div>
+                </div>
+              </div>
+
+              <div class="teardown">
+                <div class="grouphead first" style="margin-top:0"><span class="pf m"><span class="sq">f</span> Competitor ad teardown</span><span class="rule"></span><span class="ghnote">live · public</span></div>
+
+                <div class="comp">
+                  <div class="ch"><span class="nm">Verday</span><span class="stat">23 live ads</span><span class="src">Meta Ad Library</span></div>
+                  <div class="ads"><div class="adthumb"></div><div class="adthumb"></div><div class="adthumb"></div></div>
+                  <div class="angle">Lead angle: <b>discount &amp; urgency</b> — "40% off", countdowns. Refreshes weekly.</div>
+                </div>
+                <div class="comp">
+                  <div class="ch"><span class="nm">Kindred Cloth</span><span class="stat">11 live ads</span><span class="src">Meta Ad Library</span></div>
+                  <div class="ads"><div class="adthumb"></div><div class="adthumb"></div><div class="adthumb"></div></div>
+                  <div class="angle">Lead angle: <b>material story</b> — organic cotton, supply chain. Refreshes monthly.</div>
+                </div>
+                <div class="comp">
+                  <div class="ch"><span class="nm">Northbound</span><span class="stat">31 live ads</span><span class="src">Google Transparency</span></div>
+                  <div class="ads"><div class="adthumb"></div><div class="adthumb"></div><div class="adthumb"></div></div>
+                  <div class="angle">Lead angle: <b>aspirational lifestyle</b> — high refresh, 2×/week. Heavy on YouTube.</div>
+                </div>
+
+                <div class="whitespace">
+                  <div class="k">Open lane</div>
+                  <p>None of the three lead with a durability or repair guarantee — the exact angle your positioning is built on. That's white space you can own on day one.</p>
+                </div>
+
+                <div class="objline">
+                  <b>brand_brief</b> = { <span class="ky">mission</span>, <span class="ky">voice</span>[5], <span class="ky">icp</span>, <span class="ky">differentiation</span>, <span class="ky">competitive_set</span>[3], <span class="ky">benchmark_cohort</span>: "apparel · DTC · mid-AOV" }
+                </div>
+
+                <div class="actions" style="margin-top:20px">
+                  <button class="btn primary" id="toConnect">Looks right — connect my media →</button>
+                  <span class="hint">brief saved as priors</span>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2026 DayZero Intelligence. Built with insights from Claude AI.</p>
-        <p style="margin-top: 1rem;"><a href="documentation.html" style="color: var(--secondary);">View Full Documentation →</a></p>
-    </footer>
+      <!-- STAGE 1: CONNECT -->
+      <section class="scene" id="s0">
+        <div class="eyebrow">Hour zero</div>
+        <h1>Connect your media. We pull the last 30 days the moment you authenticate.</h1>
+        <p class="lede">Paid platforms hand back a month of history on the first call — so value starts now, not next quarter. Owned data maps over your first weeks and deepens attribution.</p>
 
-    <script>
-        // Smooth scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
+        <div class="ctrack">
+          <div>
+            <div class="ctitle">Paid media <span class="pill now">30 days · instant</span></div>
+            <div class="conn sel" data-c><span class="ico">G</span><div><div class="nm">Google Ads</div><div class="sub">MCC level</div></div><span class="chk"></span></div>
+            <div style="height:12px"></div>
+            <div class="conn sel" data-c><span class="ico">M</span><div><div class="nm">Meta Ads</div><div class="sub">campaign + creative</div></div><span class="chk"></span></div>
+            <div style="height:12px"></div>
+            <div class="conn sel" data-c><span class="ico">DV</span><div><div class="nm">DV360</div><div class="sub">via Bid Manager</div></div><span class="chk"></span></div>
+          </div>
+          <div>
+            <div class="ctitle">Owned media <span class="pill ramp">maps over weeks</span></div>
+            <div class="conn" data-c><span class="ico">CR</span><div><div class="nm">CRM / Sales Cloud</div><div class="sub">identity + LTV</div></div><span class="chk"></span></div>
+            <div style="height:12px"></div>
+            <div class="conn" data-c><span class="ico">W</span><div><div class="nm">Web analytics</div><div class="sub">on-site events</div></div><span class="chk"></span></div>
+            <div style="height:12px"></div>
+            <div class="conn" data-c><span class="ico">EM</span><div><div class="nm">Email / owned</div><div class="sub">engagement</div></div><span class="chk"></span></div>
+          </div>
+        </div>
 
-        // Fade in on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+        <div class="actions">
+          <button class="btn primary" id="connectBtn">Authenticate &amp; pull history</button>
+          <span class="hint" id="connHint">3 connectors selected</span>
+        </div>
+      </section>
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
+      <!-- STAGE 1: BACKFILL -->
+      <section class="scene" id="s1">
+        <div class="eyebrow">Backfilling</div>
+        <h1>Pulling 30 days of history.</h1>
+        <p class="lede">No empty dashboards waiting to fill. The intelligence layer reads structure, spend and performance as it lands.</p>
 
-        document.querySelectorAll('.fade-in').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'all 0.6s ease-out';
-            observer.observe(el);
-        });
-    </script>
+        <div class="meters">
+          <div class="meter"><div class="v mono" id="mDays">0</div><div class="l">days ingested</div></div>
+          <div class="meter"><div class="v mono" id="mRows">0</div><div class="l">rows processed</div></div>
+          <div class="meter"><div class="v mono" id="mSpend">$0</div><div class="l">spend reconciled</div></div>
+        </div>
+        <div class="progress"><i id="bar"></i></div>
+
+        <div class="feed" id="feed">
+          <div class="row"><span class="tick">✓</span> Google Ads · 18 campaigns · search terms, PMax &amp; auction insights read</div>
+          <div class="row"><span class="tick">✓</span> Meta · 11 campaigns · 240 creatives · frequency &amp; CAPI status checked</div>
+          <div class="row"><span class="tick">✓</span> DV360 · 6 insertion orders via Bid Manager</div>
+          <div class="row"><span class="tick">✓</span> Normalizing currency &amp; naming conventions</div>
+          <div class="row"><span class="tick">✓</span> Benchmarking spend &amp; CPA against apparel-vertical peers</div>
+        </div>
+      </section>
+
+      <!-- STAGE 2: AUDIT -->
+      <section class="scene" id="s2">
+        <div class="eyebrow">Found in the first 92 seconds</div>
+        <h1>The audit, before any history accrues.</h1>
+        <p class="lede">Account state plus 30 days of spend is enough to surface what's leaking on Google and Meta — and where you stand against peers.</p>
+
+        <div class="grouphead first"><span class="pf g"><span class="sq">G</span> Google Ads</span><span class="rule"></span><span class="ghnote">4 findings</span></div>
+        <div class="findings">
+          <div class="find"><span class="sev high"></span><div class="body"><div class="tag">Tracking gap · config</div><h3>4 of 18 campaigns aren't passing conversions</h3><p>Spend is live, attribution is blind. These have run dark for ~3 weeks.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">metrics.conversions</span><span class="fchip">metrics.cost_micros</span><span class="fchip">campaign.status</span><span class="fchip">conversion_action</span></div></div><div class="num h"><b>4</b><small>campaigns</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Waste · search terms</div><h3>Broad match is buying non-converting queries</h3><p>Missing negatives let spend leak to irrelevant search terms across 7 campaigns.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">search_term_view.search_term</span><span class="fchip">keyword.match_type</span><span class="fchip">metrics.cost_micros</span><span class="fchip">metrics.conversions</span></div></div><div class="num h"><b>$1.8k</b><small>per week</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Overlap · Performance Max</div><h3>PMax is claiming your branded conversions</h3><p>A third of PMax "wins" are branded searches you'd have won organically — inflating its apparent ROAS.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">campaign_search_term_insight</span><span class="fchip">campaign.advertising_channel_type</span><span class="fchip">metrics.conversions</span></div></div><div class="num h"><b>31%</b><small>branded</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Auction insights</div><h3>Losing impression share to one competitor</h3><p>A single rival is taking top-of-page share on your highest-intent non-brand terms.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">metrics.search_impression_share</span><span class="fchip">metrics.search_rank_lost_impression_share</span><span class="fchip">metrics.search_top_impression_share</span></div></div><div class="num h"><b>22%</b><small>lost IS</small></div></div>
+        </div>
+
+        <div class="grouphead"><span class="pf m"><span class="sq">f</span> Meta · Facebook &amp; Instagram</span><span class="rule"></span><span class="ghnote">4 findings</span></div>
+        <div class="findings">
+          <div class="find"><span class="sev high"></span><div class="body"><div class="tag">Signal loss · CAPI</div><h3>Conversions API isn't configured</h3><p>Browser-only signal means a large share of conversions go unattributed post-iOS — optimization is flying half-blind.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">actions.action_source <i>(website vs server)</i></span><span class="fchip">attribution_setting</span><span class="fchip">action_values</span></div></div><div class="num h"><b>~30%</b><small>conv. blind</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Creative fatigue</div><h3>Your top creative is burning out</h3><p>CTR on the lead ad is down sharply over two weeks while frequency climbs to 4.1 — audiences are saturated.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">frequency</span><span class="fchip">inline_link_click_ctr</span><span class="fchip">impressions</span><span class="fchip">date_start <i>by ad_id</i></span></div></div><div class="num h"><b>−41%</b><small>CTR, 14d</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Audience overlap</div><h3>Three ad sets are bidding against each other</h3><p>Overlapping audiences split the budget and stall exit from the learning phase.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">adset.targeting</span><span class="fchip">reach</span><span class="fchip">frequency <i>per adset_id</i></span></div></div><div class="num h"><b>3</b><small>ad sets</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Placement · waste</div><h3>Audience Network spend with no return</h3><p>Low-quality placements draw budget with effectively zero conversions.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">publisher_platform <i>breakdown</i></span><span class="fchip">spend</span><span class="fchip">actions</span></div></div><div class="num h"><b>$640</b><small>per week</small></div></div>
+        </div>
+
+        <div class="grouphead"><span class="pf x"><span class="sq">≈</span> Cross-channel benchmark</span><span class="rule"></span><span class="ghnote">data network</span></div>
+        <div class="findings">
+          <div class="find"><span class="sev bench"></span><div class="body"><div class="tag">Benchmark · privacy-safe</div><h3>Your blended CPA runs above apparel peers</h3><p>Aggregated comparison across similar advertisers — the one number a single account can't see on its own.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">cost_micros + conversions <i>(Google)</i></span><span class="fchip">spend + actions <i>(Meta)</i></span><span class="fchip">peer_cpa_index <i>(network)</i></span></div></div><div class="num t"><b>+38%</b><small>vs peers</small></div></div>
+          <div class="find"><span class="sev mid"></span><div class="body"><div class="tag">Pacing · forecast</div><h3>Q2 budget tracking to overspend</h3><p>At current daily pace, combined Google + Meta spend exceeds the committed quarter budget before period end.</p><div class="fieldrow"><span class="fl">fields</span><span class="fchip">cost_micros by segments.date <i>(Google)</i></span><span class="fchip">spend by date <i>(Meta)</i></span><span class="fchip">campaign_budget.amount_micros</span></div></div><div class="num h"><b>+14%</b><small>projected</small></div></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="toDecisions">Turn findings into decisions</button>
+          <span class="hint">10 findings · 0 charts to interpret</span>
+        </div>
+      </section>
+
+      <!-- STAGE 3: DECISIONS -->
+      <section class="scene" id="s3">
+        <div class="eyebrow">Your first six decisions</div>
+        <h1>Not insights. Actions you can take right now.</h1>
+        <p class="lede">Each decision routes through the same action layer as the self-healing pipeline loop — Signal can do it on Google and Meta, not just describe it.</p>
+
+        <div class="decks" id="decks">
+
+          <div class="grouphead first"><span class="pf g"><span class="sq">G</span> Google Ads</span><span class="rule"></span><span class="ghnote">3 decisions</span></div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">01</div>
+              <div class="main">
+                <h3>Add 47 negative keywords to stop spend on non-converting queries</h3>
+                <p class="why">Reclaims the broad-match leak across 7 campaigns and points budget back at intent that converts.</p>
+                <div class="conf"><span class="track"><i style="width:89%"></i></span><span class="lab">confidence 0.89 · reclaims ~$1.8k/wk</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Added · 47 negatives live, spend reclaimed">Add negatives</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Added</b><span class="heal">live</span></div>
+          </div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">02</div>
+              <div class="main">
+                <h3>Fix conversion tracking on the 4 blind campaigns</h3>
+                <p class="why">Re-applies the account's standard conversion action so spend stops running unattributed.</p>
+                <div class="conf"><span class="track"><i style="width:87%"></i></span><span class="lab">confidence 0.87</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Fixed · tracking restored on 4 campaigns" data-heal="self-healing">Apply fix</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Fixed</b><span class="heal">self-healing</span></div>
+          </div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">03</div>
+              <div class="main">
+                <h3>Exclude brand terms from Performance Max</h3>
+                <p class="why">Stops PMax claiming branded searches, so its ROAS reads true and brand search keeps its own budget.</p>
+                <div class="conf"><span class="track"><i style="width:92%"></i></span><span class="lab">confidence 0.92</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Excluded · PMax no longer bids on brand">Exclude brand</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Excluded</b><span class="heal">applied</span></div>
+          </div>
+
+          <div class="grouphead"><span class="pf m"><span class="sq">f</span> Meta · Facebook &amp; Instagram</span><span class="rule"></span><span class="ghnote">3 decisions</span></div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">04</div>
+              <div class="main">
+                <h3>Turn on the Conversions API to recover lost signal</h3>
+                <p class="why">Restores server-side events so optimization sees the ~30% of conversions browser tracking misses.</p>
+                <div class="conf"><span class="track"><i style="width:90%"></i></span><span class="lab">confidence 0.90 · recovers ~30% signal</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Live · Conversions API recovering signal" data-heal="self-healing">Turn on CAPI</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Live</b><span class="heal">self-healing</span></div>
+          </div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">05</div>
+              <div class="main">
+                <h3>Refresh the 3 fatigued creatives &amp; cap frequency at 2.5</h3>
+                <p class="why">Rotates in fresh variants and stops over-serving saturated audiences before CTR collapses further.</p>
+                <div class="conf"><span class="track"><i style="width:85%"></i></span><span class="lab">confidence 0.85</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Queued · 3 refreshes + frequency cap set">Refresh creative</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Queued</b><span class="heal">scheduled</span></div>
+          </div>
+
+          <div class="deck" data-deck>
+            <div class="top">
+              <div class="idx">06</div>
+              <div class="main">
+                <h3>Merge the 3 overlapping ad sets to exit the learning phase</h3>
+                <p class="why">Consolidates split audiences so the campaign pools signal and stabilizes delivery faster.</p>
+                <div class="conf"><span class="track"><i style="width:88%"></i></span><span class="lab">confidence 0.88</span></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <button class="mini act" data-act data-done="Merged · ad sets consolidated, learning reset">Merge ad sets</button>
+              <button class="mini dis" data-dismiss>Dismiss</button>
+            </div>
+            <div class="resbar"><span class="tick"></span><b>Merged</b><span class="heal">delivering</span></div>
+          </div>
+        </div>
+
+        <div class="summary" id="summary">
+          <div class="big">That's the day-zero loop.</div>
+          <p>Connect → 30-day backfill → audit → acted-on decisions, inside the first few minutes. Owned media now layers in over the coming weeks to deepen attribution and LTV — but the client already got value in hour one.</p>
+          <div class="restart"><button class="btn ghost" id="restart">Run it again</button></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="foot">CONCEPT MOCKUP · numbers illustrative · built to pressure-test "value in hour one"</div>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var clk = document.getElementById('clk');
+
+  // elapsed clock — jumps as stages complete
+  function setClock(s){
+    var m = Math.floor(s/60), sec = s%60;
+    clk.textContent = 'T+' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+
+  // connector selection
+  var selected = 3;
+  document.querySelectorAll('[data-c]').forEach(function(c){
+    c.addEventListener('click', function(){
+      c.classList.toggle('sel');
+      selected = document.querySelectorAll('[data-c].sel').length;
+      var h = document.getElementById('connHint');
+      h.textContent = selected + ' connector' + (selected!==1?'s':'') + ' selected';
+      document.getElementById('connectBtn').disabled = selected===0;
+    });
+  });
+
+  function show(id){
+    document.querySelectorAll('.scene').forEach(function(s){s.classList.remove('on')});
+    document.getElementById(id).classList.add('on');
+  }
+  function spine(active){
+    document.querySelectorAll('.step').forEach(function(st){
+      var i = +st.dataset.step;
+      st.classList.toggle('active', i===active);
+      st.classList.toggle('done', i<active);
+    });
+  }
+
+  // brief assembly (pre-connect)
+  var briefBtn=document.getElementById('briefBtn');
+  briefBtn.addEventListener('click', function(){
+    briefBtn.disabled=true;
+    briefBtn.innerHTML='<span class="spin"></span> Assembling…';
+    document.getElementById('outEmpty').style.display='none';
+    document.getElementById('assembling').classList.add('on');
+    var bar=document.getElementById('bbBar'), rowsEl=document.querySelectorAll('#bbFeed .row');
+    var dur=reduce?1:2400, t0=performance.now();
+    (function frame(now){
+      var p=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-p,3);
+      bar.style.width=(ease*100)+'%';
+      var n=Math.floor(ease*rowsEl.length+0.0001);
+      for(var i=0;i<rowsEl.length;i++) rowsEl[i].classList.toggle('in', i<n || p===1);
+      if(p<1) requestAnimationFrame(frame);
+      else setTimeout(function(){
+        document.getElementById('assembling').classList.remove('on');
+        document.getElementById('brief').classList.add('on');
+      }, reduce?0:420);
+    })(performance.now());
+  });
+
+  // BRIEF -> CONNECT (the clock starts here)
+  document.getElementById('toConnect').addEventListener('click', function(){
+    spine(1); show('s0');
+    document.getElementById('clkLabel').style.display='';
+    setClock(0);
+    document.getElementById('tsConnect').textContent='T+00:00';
+  });
+
+  // CONNECT -> BACKFILL
+  document.getElementById('connectBtn').addEventListener('click', function(){
+    document.getElementById('tsBackfill').textContent='running…';
+    spine(2); show('s1'); runBackfill();
+  });
+
+  // STAGE 1: backfill animation
+  function runBackfill(){
+    var days=document.getElementById('mDays'), rows=document.getElementById('mRows'),
+        spend=document.getElementById('mSpend'), bar=document.getElementById('bar');
+    var rowsEl=document.querySelectorAll('#feed .row');
+    var dur = reduce?1:2600, t0=performance.now();
+    var fmt=function(n){return n>=1000?(n/1000).toFixed(0)+'k':n};
+    function frame(now){
+      var p=Math.min((now-t0)/dur,1);
+      var ease=1-Math.pow(1-p,3);
+      days.textContent=Math.round(ease*30);
+      rows.textContent=fmt(Math.round(ease*847000));
+      spend.textContent='$'+Math.round(ease*412).toLocaleString()+'k';
+      bar.style.width=(ease*100)+'%';
+      var n=Math.floor(ease*rowsEl.length+0.0001);
+      for(var i=0;i<rowsEl.length;i++) rowsEl[i].classList.toggle('in', i<n || p===1);
+      setClock(Math.round(ease*12));
+      if(p<1) requestAnimationFrame(frame);
+      else { document.getElementById('tsBackfill').textContent='T+00:12'; setTimeout(toAudit,650); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // BACKFILL -> AUDIT
+  function toAudit(){
+    spine(3); show('s2');
+    document.getElementById('tsAudit').textContent='T+01:32';
+    setClock(92);
+    var f=document.querySelectorAll('#s2 .find');
+    f.forEach(function(el,i){ setTimeout(function(){el.classList.add('in')}, reduce?0:i*130); });
+  }
+
+  // AUDIT -> DECISIONS
+  document.getElementById('toDecisions').addEventListener('click', function(){
+    spine(4); show('s3');
+    document.getElementById('tsDecide').textContent='T+01:40';
+    setClock(100);
+  });
+
+  // STAGE 3: act / dismiss
+  function checkDone(){
+    var decks=document.querySelectorAll('[data-deck]');
+    var settled=0;
+    decks.forEach(function(d){ if(d.classList.contains('resolved')||d.classList.contains('dismissed')) settled++; });
+    if(settled===decks.length) document.getElementById('summary').classList.add('on');
+  }
+  document.querySelectorAll('[data-act]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var deck=btn.closest('[data-deck]');
+      btn.innerHTML='<span class="spin"></span> Working…';
+      btn.disabled=true;
+      setTimeout(function(){
+        deck.classList.add('resolved');
+        var rb=deck.querySelector('.resbar b');
+        rb.textContent=btn.dataset.done;
+        var heal=deck.querySelector('.resbar .heal');
+        if(btn.dataset.heal) heal.textContent=btn.dataset.heal;
+        deck.querySelectorAll('.mini').forEach(function(m){m.style.display='none'});
+        checkDone();
+      }, reduce?0:850);
+    });
+  });
+  document.querySelectorAll('[data-dismiss]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var deck=btn.closest('[data-deck]');
+      deck.classList.add('dismissed');
+      deck.style.opacity='.3';
+      deck.querySelectorAll('.mini').forEach(function(m){m.disabled=true});
+      checkDone();
+    });
+  });
+
+  // restart
+  document.getElementById('restart').addEventListener('click', function(){ location.reload(); });
+})();
+</script>
 </body>
 </html>
