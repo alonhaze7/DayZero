@@ -288,6 +288,10 @@
   .btn-slack:hover{border-color:var(--teal);color:var(--teal)}
   .btn-slack .sico{width:16px;height:16px;border-radius:3px;background:#4A154B;display:grid;place-items:center;font-size:9px;color:#fff;font-weight:700}
 
+  /* per-deck slack button */
+  .slack-deck{display:inline-flex!important;align-items:center;gap:5px;margin-left:auto!important}
+  .slack-deck .sico{width:14px;height:14px;border-radius:3px;background:#4A154B;display:inline-grid;place-items:center;font-size:8px;color:#fff;font-weight:700}
+
   @media(max-width:680px){
     .grid{grid-template-columns:1fr}
     .spine{display:none}
@@ -537,7 +541,7 @@
 
           <div class="grouphead first"><span class="pf g"><span class="sq">G</span> Google Ads</span><span class="rule"></span><span class="ghnote">3 decisions</span></div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="Broad match buying non-converting queries — $1.8k/wk leak across 7 campaigns">
             <div class="top">
               <div class="idx">01</div>
               <div class="main">
@@ -550,11 +554,12 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Added · 47 negatives live, spend reclaimed">Add negatives</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Added</b><span class="heal">live</span></div>
           </div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="4 of 18 campaigns aren't passing conversions — spend is live, attribution is blind for ~3 weeks">
             <div class="top">
               <div class="idx">02</div>
               <div class="main">
@@ -567,11 +572,12 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Fixed · tracking restored on 4 campaigns" data-heal="self-healing">Apply fix</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Fixed</b><span class="heal">self-healing</span></div>
           </div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="PMax is claiming 31% branded conversions — inflating its apparent ROAS with organic wins">
             <div class="top">
               <div class="idx">03</div>
               <div class="main">
@@ -584,13 +590,14 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Excluded · PMax no longer bids on brand">Exclude brand</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Excluded</b><span class="heal">applied</span></div>
           </div>
 
           <div class="grouphead"><span class="pf m"><span class="sq">f</span> Meta · Facebook &amp; Instagram</span><span class="rule"></span><span class="ghnote">3 decisions</span></div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="Conversions API not configured — ~30% of conversions unattributed post-iOS, optimization flying half-blind">
             <div class="top">
               <div class="idx">04</div>
               <div class="main">
@@ -603,11 +610,12 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Live · Conversions API recovering signal" data-heal="self-healing">Turn on CAPI</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Live</b><span class="heal">self-healing</span></div>
           </div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="Top creative CTR down −41% over 2 weeks, frequency at 4.1 — audiences saturated">
             <div class="top">
               <div class="idx">05</div>
               <div class="main">
@@ -620,11 +628,12 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Queued · 3 refreshes + frequency cap set">Refresh creative</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Queued</b><span class="heal">scheduled</span></div>
           </div>
 
-          <div class="deck" data-deck>
+          <div class="deck" data-deck data-audit="3 ad sets bidding against each other — overlapping audiences stall learning phase exit">
             <div class="top">
               <div class="idx">06</div>
               <div class="main">
@@ -637,6 +646,7 @@
             <div class="ctl">
               <button class="mini act" data-act data-done="Merged · ad sets consolidated, learning reset">Merge ad sets</button>
               <button class="mini dis" data-dismiss>Dismiss</button>
+              <button class="mini dis slack-deck" data-slack-deck><span class="sico">S</span> Slack</button>
             </div>
             <div class="resbar"><span class="tick"></span><b>Merged</b><span class="heal">delivering</span></div>
           </div>
@@ -873,6 +883,9 @@
     if(mode==='audit'){
       slackSub.textContent='Share the instant audit findings with your team';
       slackPreview.innerHTML=buildAuditPreview();
+    } else if(mode==='single'){
+      slackSub.textContent='Share this decision with your team';
+      slackPreview.innerHTML=buildSingleDecisionPreview();
     } else {
       slackSub.textContent='Share the first decisions with your team';
       slackPreview.innerHTML=buildDecisionsPreview();
@@ -910,8 +923,36 @@
       '<br><span style="color:var(--teal)">'+resolved.length+' decisions executed</span> in the first session.';
   }
 
+  function buildSingleDecisionPreview(){
+    if(!activeDeck) return '';
+    var types=[];
+    activeDeck.querySelectorAll('.atype').forEach(function(a){types.push(a.textContent)});
+    var title=activeDeck.querySelector('h3').textContent;
+    var why=activeDeck.querySelector('.why').textContent;
+    var conf=activeDeck.querySelector('.conf .lab').textContent;
+    var audit=activeDeck.dataset.audit||'';
+    var html='<div class="phead">⚡ Signal — Decision Recommendation</div>';
+    html+='<b>['+types.join(' + ')+']</b> '+title+'<br>';
+    html+='<span style="color:var(--ink-lo)">'+why+'</span><br>';
+    html+='<span style="color:var(--teal)">'+conf+'</span><br>';
+    if(audit){
+      html+='<br><b style="color:var(--signal)">Audit finding:</b><br>';
+      html+=audit;
+    }
+    return html;
+  }
+
   document.getElementById('slackAudit').addEventListener('click',function(){openSlack('audit')});
   document.getElementById('slackDecisions').addEventListener('click',function(){openSlack('decisions')});
+
+  // Per-decision slack buttons
+  var activeDeck=null;
+  document.querySelectorAll('[data-slack-deck]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      activeDeck=btn.closest('[data-deck]');
+      openSlack('single');
+    });
+  });
 
   slackTarget.addEventListener('input',function(){
     slackSend.disabled=slackTarget.value.trim().length===0;

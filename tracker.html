@@ -243,6 +243,11 @@
   .btn-slack:hover{border-color:var(--teal);color:var(--teal)}
   .btn-slack .sico{width:16px;height:16px;border-radius:3px;background:#4A154B;display:grid;place-items:center;font-size:9px;color:#fff;font-weight:700}
 
+  /* per-detection slack button */
+  .slack-det{display:inline-flex!important;align-items:center;gap:5px;margin-left:auto!important;border-color:var(--line)!important;background:transparent!important;color:var(--ink-mid)!important}
+  .slack-det:hover{border-color:var(--teal)!important;color:var(--teal)!important}
+  .slack-det .sico{width:14px;height:14px;border-radius:3px;background:#4A154B;display:inline-grid;place-items:center;font-size:8px;color:#fff;font-weight:700}
+
   @media(max-width:760px){
     .grid{grid-template-columns:1fr}
     .spine{display:none}
@@ -354,7 +359,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -379,7 +385,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -404,7 +411,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -429,7 +437,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -456,7 +465,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -481,7 +491,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -506,7 +517,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -531,7 +543,8 @@
             </div>
             <div class="ctl">
               <button class="mini confirm" data-confirm>Confirm — that's mine</button>
-              <button class="mini reject" data-reject>Not my change</button>
+              <button class="mini reject" data-reject>Dismiss</button>
+              <button class="mini reject slack-det" data-slack-det><span class="sico">S</span> Slack</button>
             </div>
             <div class="intent-area">
               <div class="il">Why did you make this change?</div>
@@ -769,14 +782,44 @@
   var slackSend=document.getElementById('slackSend');
   var slackPreview=document.getElementById('slackPreview');
 
-  function openSlack(){
+  function openSlack(mode){
     document.getElementById('slackForm').style.display='';
     document.getElementById('slackSent').style.display='none';
     slackTarget.value='';
     slackSend.disabled=true;
-    slackPreview.innerHTML=buildDetectionsPreview();
+    if(mode==='single' && activeDet){
+      slackPreview.innerHTML=buildSingleDetectionPreview();
+    } else {
+      slackPreview.innerHTML=buildDetectionsPreview();
+    }
     slackOverlay.classList.add('open');
     setTimeout(function(){slackTarget.focus()},200);
+  }
+
+  function buildSingleDetectionPreview(){
+    if(!activeDet) return '';
+    var type=activeDet.querySelector('.atype').textContent;
+    var title=activeDet.querySelector('h3').textContent;
+    var saw=activeDet.querySelector('.saw').textContent.replace('What we saw','').trim();
+    var impEl=activeDet.querySelector('.imp');
+    var impText='';
+    if(impEl){
+      var label=impEl.querySelector('.imp-label');
+      var reason=impEl.querySelector('.imp-reason');
+      if(label&&reason) impText=label.textContent+' '+reason.textContent;
+    }
+    var confEl=activeDet.querySelector('.conf-row .lab');
+    var conf=confEl?confEl.textContent:'';
+    var status='pending';
+    if(activeDet.classList.contains('confirmed')) status='confirmed';
+    else if(activeDet.classList.contains('rejected')) status='rejected';
+
+    var html='<div class="phead">📋 Signal — Detected Decision</div>';
+    html+='<b>['+type+']</b> '+title+'<br><br>';
+    html+='<b>What we saw:</b> '+saw+'<br><br>';
+    if(impText) html+='<b style="color:var(--signal)">Importance:</b> '+impText+'<br>';
+    html+='<span style="color:var(--teal)">'+conf+'</span> · status: '+status;
+    return html;
   }
 
   function buildDetectionsPreview(){
@@ -804,7 +847,17 @@
       '<br><span style="color:var(--teal)">'+confirmed+' confirmed · '+rejected+' rejected · '+(8-reviewed)+' pending</span>';
   }
 
-  document.getElementById('slackDetections').addEventListener('click',function(){openSlack()});
+  document.getElementById('slackDetections').addEventListener('click',function(){openSlack('all')});
+
+  // Per-detection slack buttons
+  var activeDet=null;
+  document.querySelectorAll('[data-slack-det]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      activeDet=btn.closest('.det');
+      openSlack('single');
+    });
+  });
 
   slackTarget.addEventListener('input',function(){
     slackSend.disabled=slackTarget.value.trim().length===0;
