@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MI Incremental Attributes - Technical Design</title>
+    <style>
+        :root {
+            --primary-color: #0176d3;
+            --secondary-color: #032d60;
+            --success-color: #04844b;
+            --warning-color: #fe9339;
+            --danger-color: #ea001e;
+            --bg-color: #f3f3f3;
+            --card-bg: #ffffff;
+            --text-color: #181818;
+            --border-color: #dddbda;
+            --code-bg: #f4f6f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            max-width: 1800px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            color: var(--secondary-color);
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-color);
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-submenu {
+            list-style: none;
+            margin-left: 16px;
+            margin-top: 4px;
+        }
+
+        .nav-submenu .nav-link {
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header .meta {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: var(--card-bg);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            color: var(--secondary-color);
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .section h3 {
+            color: var(--text-color);
+            font-size: 20px;
+            margin-top: 24px;
+            margin-bottom: 16px;
+        }
+
+        .section h4 {
+            color: var(--text-color);
+            font-size: 16px;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+        }
+
+        ul, ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Blocks */
+        code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #c7254e;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--primary-color);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: var(--bg-color);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .badge-success {
+            background: #d0f0e1;
+            color: var(--success-color);
+        }
+
+        .badge-warning {
+            background: #ffefd6;
+            color: #a86403;
+        }
+
+        .badge-danger {
+            background: #feded8;
+            color: var(--danger-color);
+        }
+
+        .badge-info {
+            background: #d8edff;
+            color: var(--primary-color);
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .callout-info {
+            background: #d8edff;
+            border-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        .callout-success {
+            background: #d0f0e1;
+            border-color: var(--success-color);
+            color: #024628;
+        }
+
+        .callout-warning {
+            background: #ffefd6;
+            border-color: var(--warning-color);
+            color: #a86403;
+        }
+
+        .callout-danger {
+            background: #feded8;
+            border-color: var(--danger-color);
+            color: #ba0517;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        /* Collapsible Sections */
+        .collapsible {
+            background: var(--bg-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .collapsible:hover {
+            background: var(--border-color);
+        }
+
+        .collapsible.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 16px;
+        }
+
+        .collapsible-content.show {
+            max-height: 2000px;
+            padding: 16px;
+        }
+
+        /* Diagram Container */
+        .diagram {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .diagram img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Sequence Steps */
+        .sequence-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 6px;
+        }
+
+        .step-number {
+            background: var(--primary-color);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+            }
+        }
+
+        /* Link Styling */
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Icons */
+        .icon {
+            margin-right: 8px;
+        }
+
+        /* Flow Chart Styling */
+        .flow-step {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .flow-step:last-child::after {
+            content: '';
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <h2>📖 Documentation</h2>
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search documentation...">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#overview" class="nav-link active">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#requirements" class="nav-link">Requirements</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#proposal" class="nav-link">Technical Proposal</a>
+                    <ul class="nav-submenu">
+                        <li class="nav-item"><a href="#proposal-opt-in" class="nav-link">Opt-In Configuration</a></li>
+                        <li class="nav-item"><a href="#proposal-dataprovider" class="nav-link">DataProvider API</a></li>
+                        <li class="nav-item"><a href="#proposal-persistence" class="nav-link">Persistence Layer</a></li>
+                        <li class="nav-item"><a href="#proposal-ui" class="nav-link">UI Integration</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="#lifecycle" class="nav-link">Attribute Lifecycle</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#unstructured" class="nav-link">Unstructured Connectors</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#ui-details" class="nav-link">UI Details</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#db-changes" class="nav-link">Database Changes</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#references" class="nav-link">References</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Incremental Attributes for MI</h1>
+                <p class="meta">
+                    <strong>Extraction Progress and Partial Success support for MI Connectors via DCF</strong><br>
+                    Created by @Rupa Singh (rupa.singh@salesforce.com) | June 15th, 2026<br>
+                    <a href="https://docs.google.com/document/d/16wgk49mFcZBot_miPZQ3Zc3evoCzHWzqE68qJurIB50/edit?tab=t.0" style="color: white; text-decoration: underline;">View Original Google Doc</a>
+                </p>
+            </div>
+
+            <!-- Overview Section -->
+            <section id="overview" class="section">
+                <h2>📋 Executive Summary</h2>
+
+                <p>Marketing Intelligence (MI) requires its connectors to report extraction progress at a granular, partitioned level (by time window or account) to facilitate large-scale onboarding. This document proposes leveraging DCF's existing Incremental Extract Attributes mechanism to support partial success reporting and recovery.</p>
+
+                <h3>Key Features</h3>
+                <div>
+                    <span class="badge badge-success">✓ Structured Connector Support</span>
+                    <span class="badge badge-success">✓ Opt-In Configuration</span>
+                    <span class="badge badge-success">✓ New DataProvider API</span>
+                    <span class="badge badge-success">✓ UI Integration</span>
+                    <span class="badge badge-success">✓ Fast Retry Recovery</span>
+                </div>
+
+                <h3>Dependencies</h3>
+                <ul>
+                    <li><a href="https://gus.lightning.force.com/lightning/r/ADM_Team_Dependency__c/a0nEE000001G00HYAS/view">TD-0323935</a> - DCF Team Dependency</li>
+                    <li><a href="https://gus.lightning.force.com/lightning/r/ADM_Team_Dependency__c/a0nEE000001G01tYAC/view">TD-0323936</a> - Data Services Team Dependency</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <strong>💡 Value Proposition</strong>
+                    Eliminates the need for MI team to build a complex, slow, and brittle core-side orchestration layer for scheduling per-partition extracts. Successfully processed data remains preserved during mid-run failures, allowing retries to skip completed partitions.
+                </div>
+            </section>
+
+            <!-- Requirements Section -->
+            <section id="requirements" class="section">
+                <h2>📝 Requirements</h2>
+
+                <h3>In Scope</h3>
+                <ul>
+                    <li>Granular progress reporting by time window or account</li>
+                    <li>Partial success support for structured connectors</li>
+                    <li>UI display of partial ingestion details</li>
+                    <li>Fast recovery path with partition skipping</li>
+                </ul>
+
+                <h3>Out of Scope</h3>
+                <div class="callout callout-warning">
+                    <strong>⚠️ Not Included</strong>
+                    <ul>
+                        <li>Partial ingestion support for Structured JDBC connectors via DCF</li>
+                        <li>UI visibility for non-incremental extract metadata</li>
+                        <li>UI enhancements for user interactions and selective incremental ingestion</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Technical Proposal Section -->
+            <section id="proposal" class="section">
+                <h2>🔧 Technical Proposal</h2>
+
+                <!-- Opt-In Configuration -->
+                <div id="proposal-opt-in">
+                    <h3>1. Connector Opt-In Configuration</h3>
+                    <p>Structured connectors opt into partial success functionality via feature configuration in their connector definition JSON:</p>
+
+                    <pre><code class="language-json">"featuresConfig" : {
+    "IncrementalUpdate" : {
+        "deleteSupport" : "true",
+        "partialSuccessSupport" : "true"
+    }
+}</code></pre>
+
+                    <div class="callout callout-success">
+                        <strong>✓ Backward Compatible</strong>
+                        Existing connectors continue to work unchanged. Only connectors explicitly opting in will get partial success support.
+                    </div>
+                </div>
+
+                <!-- DataProvider API -->
+                <div id="proposal-dataprovider">
+                    <h3>2. New DataProvider API Method</h3>
+                    <p>A new default method is added to the <code>DataProvider</code> interface:</p>
+
+                    <pre><code class="language-java">public interface DataProvider&lt;T&gt;
+{
+    ...
+
+    /**
+     * Returns partial success details for structured connectors.
+     * This information is persisted when extraction succeeds but
+     * some partitions failed.
+     *
+     * @return JSON string with partition-level details (max 5000 chars)
+     * @throws ConnectorException if unable to generate details
+     */
+    default String getPartialSuccessDetails() throws ConnectorException {
+        return StringUtil.EMPTY;
+    }
+
+    ...
+}</code></pre>
+
+                    <h4>Return Value Format</h4>
+                    <p>Connectors can return any JSON format. Example:</p>
+
+                    <pre><code class="language-json">{
+  "runId": "abc-123",
+  "schemaVersion": 1,
+  "startedAt": "2026-05-07T08:00:00Z",
+  "completedAt": "2026-05-07T08:42:11Z",
+  "summary": {
+    "total": 52,
+    "succeeded": 47,
+    "failed": 5
+  },
+  "partitions": [
+    {
+      "key": "account=123/window=2025-W14",
+      "status": "SUCCESS",
+      "rowsExtracted": 18432
+    },
+    {
+      "key": "account=123/window=2025-W31",
+      "status": "FAILED",
+      "errorCode": "RATE_LIMIT"
+    }
+  ]
+}</code></pre>
+                </div>
+
+                <!-- Persistence Layer -->
+                <div id="proposal-persistence">
+                    <h3>3. DCF Persistence Layer</h3>
+                    <p>DCF saves the partial success details as part of the data stream job for structured connectors that have opted in:</p>
+
+                    <pre><code class="language-java">if (connector.hasOptedIntoPartialSuccessSupport()
+       && !StringUtils.EMPTY.equals(dataProvider.getPartialSuccessDetails())) {
+
+    DATA_STREAM_JOB_STATUS_REASON_OVERRIDE = "DATA_INGEST_SUCCESSFUL_WITH_ERRORS";
+
+    // Truncated to a maximum of 5,000 characters
+    DATA_STREAM_JOB_STATUS_DETAIL_OVERRIDE =
+            truncate(dataProvider.getPartialSuccessDetails(), 5000);
+}</code></pre>
+
+                    <div class="callout callout-warning">
+                        <strong>⚠️ Size Limit</strong>
+                        The status detail is capped at 5,000 characters. Connectors must provide concise, actionable information within this limit. A proposal to increase this to 10,000 characters is under consideration.
+                    </div>
+
+                    <h4>Database Storage</h4>
+                    <p>Upon job completion, these details are permanently recorded as part of the <code>job_metadata</code> in the <code>data_stream_job</code> table, then copied to <code>status_detail</code> in <code>data_stream_job_stat</code>.</p>
+                </div>
+
+                <!-- UI Integration -->
+                <div id="proposal-ui">
+                    <h3>4. UI Integration</h3>
+                    <p>The UI displays an info icon (ⓘ) for successful jobs with warnings:</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Icon</th>
+                                <th>Condition</th>
+                                <th>User Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>FAILURE</td>
+                                <td>❌ Red error icon</td>
+                                <td>Job failed completely</td>
+                                <td>Click to view error details</td>
+                            </tr>
+                            <tr>
+                                <td>SUCCESS (with warnings)</td>
+                                <td>ⓘ Blue info icon</td>
+                                <td>statusReason = "DATA_INGEST_SUCCESSFUL_WITH_ERRORS"</td>
+                                <td>Click to view partial failure details</td>
+                            </tr>
+                            <tr>
+                                <td>SUCCESS</td>
+                                <td>✓ No icon</td>
+                                <td>Job succeeded without issues</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Feature Gate</h4>
+                    <p>Controlled by: <code>com.salesforce.cdp.connectorsFramework.enableDcfPartialIngestForUnstructuredConnectors</code></p>
+
+                    <h4>Download Log</h4>
+                    <p>Users can click "Download Log" to fetch the full <code>status_detail</code> (up to 5000 chars) via the endpoint:</p>
+                    <code>GET /streams/{dataStreamId}/status/{statusId}/logs</code>
+                </div>
+            </section>
+
+            <!-- Sequence Diagrams -->
+            <section id="sequence-diagrams" class="section">
+                <h2>📊 Sequence Diagrams</h2>
+
+                <h3>Success Flow</h3>
+                <div class="diagram">
+                    <p><em>Sequence showing successful extraction with partial success details</em></p>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: left;">
+                        <div class="sequence-step">
+                            <div class="step-number">01</div>
+                            <div class="step-content">
+                                <h4>data-services → data-connectors</h4>
+                                <p>Invoke Data stream job execution via Kafka (pass jobMetadata)</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">02</div>
+                            <div class="step-content">
+                                <h4>data-connectors reads jobMetadata</h4>
+                                <p>Extracts incremental attributes and configuration</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">03</div>
+                            <div class="step-content">
+                                <h4>data-connectors → Connector</h4>
+                                <p>Invoke extractData with Incremental Extract Attrs</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">04</div>
+                            <div class="step-content">
+                                <h4>Connector → data-connectors</h4>
+                                <p>Provide data + Incremental Extract Attributes + <strong>partialIngestDetails</strong></p>
+                            </div>
+                        </div>
+                        <div class="callout callout-info" style="margin: 16px 0;">
+                            <strong>🆕 New Step</strong>
+                            DCF stores partial ingest status overrides before calling updateJob
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">05</div>
+                            <div class="step-content">
+                                <h4>data-connectors processes partialIngestDetails</h4>
+                                <p>
+                                    Save to DATA_STREAM_JOB_STATUS_DETAIL_OVERRIDE (trimmed to 5000 chars)<br>
+                                    Set DATA_STREAM_JOB_STATUS_REASON_OVERRIDE to "DATA_INGEST_SUCCESSFUL_WITH_ERRORS"
+                                </p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">06</div>
+                            <div class="step-content">
+                                <h4>data-connectors → data-services</h4>
+                                <p>updateJob (Stash incremental Extract attributes + partialIngestDetails into jobMetadata)</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">07</div>
+                            <div class="step-content">
+                                <h4>data-connectors → DPC</h4>
+                                <p>Submit Spark job for ingestion</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">08</div>
+                            <div class="step-content">
+                                <h4>DPC → data-services</h4>
+                                <p>Ingestion successful</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">09</div>
+                            <div class="step-content">
+                                <h4>data-services updates job to Success</h4>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
+                            ⏱️ Asynchronous CDC Event Flow
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">10</div>
+                            <div class="step-content">
+                                <h4>data-services → data-connectors</h4>
+                                <p>Publish Job Success message and provide the job_metadata via Kafka</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">11</div>
+                            <div class="step-content">
+                                <h4>data-connectors processes CDC event</h4>
+                                <p>Deserializes jobMetadata JSON, extracts INCREMENTAL_EXTRACT_ATTRIBUTES</p>
+                            </div>
+                        </div>
+                        <div class="sequence-step">
+                            <div class="step-number">12</div>
+                            <div class="step-content">
+                                <h4>data-connectors → data-services</h4>
+                                <p>updateIncrementalExtractAttributes (Finally persists on DATA STREAM entity for next job's incremental fetch)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Failure Flow</h3>
+                <div class="diagram">
+                    <p><em>Two failure scenarios: extraction failure and ingestion failure</em></p>
+                    <div class="callout callout-danger">
+                        <strong>❌ Case A: Extraction Fails</strong>
+                        <p>If extraction fails, the process stops immediately. No ingestion is attempted, and incremental attributes are NOT saved.</p>
+                    </div>
+                    <div class="callout callout-danger">
+                        <strong>❌ Case B: Ingestion Fails</strong>
+                        <p>If extraction succeeds but ingestion fails, the CDC event is published with failure status. The connector discards the job metadata, and incremental attributes are NOT saved.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lifecycle Section -->
+            <section id="lifecycle" class="section">
+                <h2>🔄 INCREMENTAL_EXTRACT_ATTRIBUTES Lifecycle</h2>
+
+                <h3>Overview</h3>
+                <p><code>jobMetadata</code> is a <code>Map&lt;String, String&gt;</code> carried on DataStreamJob and persisted as a jsonb column in the <code>data_stream_job</code> table. It stores per-job execution context including connector name, data load mode, and incremental extract attributes.</p>
+
+                <p><code>INCREMENTAL_EXTRACT_ATTRIBUTES</code> is a key within that map whose value is a JSON-serialized string of a <code>Map&lt;String, Object&gt;</code> — representing the connector plugin's cursor/watermark for incremental extraction.</p>
+
+                <h3>Database Storage</h3>
+                <p><strong>Table:</strong> <code>data_stream_job</code><br>
+                <strong>Column:</strong> <code>job_metadata</code> (type: jsonb)</p>
+
+                <pre><code class="language-json">{
+  "CONNECTOR_NAME": "SNOWFLAKE",
+  "ISV_CONNECTOR_NAME": "",
+  "DATA_LOAD_MODE": "INCREMENTAL",
+  "s3JobRootPath": "tenant123/streams/ds-456/jobs/job-789",
+  "INCREMENTAL_EXTRACT_ATTRIBUTES": "{\"lastModifiedDate\":\"2024-01-15T10:30:00Z\",\"cursor\":\"abc123\"}"
+}</code></pre>
+
+                <div class="callout callout-warning">
+                    <strong>⚠️ String-Escaped JSON</strong>
+                    <code>INCREMENTAL_EXTRACT_ATTRIBUTES</code> is stored as a string within the JSON — a serialized nested JSON object, not an embedded JSON object. Connector code must properly serialize and deserialize this string.
+                </div>
+
+                <h3>Key Classes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Repo</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>DataStreamJob</td>
+                            <td>data-services</td>
+                            <td>JPA entity with @Column(name = "job_metadata", columnDefinition = "jsonb")</td>
+                        </tr>
+                        <tr>
+                            <td>DataStreamJobService</td>
+                            <td>data-services</td>
+                            <td>saveInitialJob(), updateStreamJob() (merges metadata)</td>
+                        </tr>
+                        <tr>
+                            <td>DataStreamEventsProcessor</td>
+                            <td>data-connectors</td>
+                            <td>Consumes ConnectorTriggerEvent from Kafka</td>
+                        </tr>
+                        <tr>
+                            <td>DataStreamService</td>
+                            <td>data-connectors</td>
+                            <td>Orchestrates extraction, puts INCREMENTAL_EXTRACT_ATTRIBUTES into jobMetadata</td>
+                        </tr>
+                        <tr>
+                            <td>CdcEventsListener</td>
+                            <td>data-connectors</td>
+                            <td>Consumes CDC event, extracts INCREMENTAL_EXTRACT_ATTRIBUTES, persists to data stream</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>15-Step Process Flow</h3>
+                <button class="collapsible">Click to expand detailed step-by-step flow</button>
+                <div class="collapsible-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Service</th>
+                                <th>Action</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>data-services</td>
+                                <td>saveInitialJob()</td>
+                                <td>Creates DataStreamJob row with initial job_metadata jsonb</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>data-services</td>
+                                <td>sendJobCreateEvent()</td>
+                                <td>Publishes ConnectorTriggerEvent to Kafka with jobMetadata</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>data-connectors</td>
+                                <td>Consumes Kafka event</td>
+                                <td>Deserializes ConnectorTriggerEvent</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>data-connectors</td>
+                                <td>buildProcessStreamJobSnapshot()</td>
+                                <td>Builds snapshot with jobMetadata from payload</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>data-connectors</td>
+                                <td>buildProcessStreamJobDetails()</td>
+                                <td>Copies jobMetadata, reads overrides</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>data-connectors</td>
+                                <td>updateDataStreamJobWithUpdateMetadataInSnapshot()</td>
+                                <td>Adds CONNECTOR_NAME, DATA_LOAD_MODE, etc. to jobMetadata</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>data-services</td>
+                                <td>updateStreamJob()</td>
+                                <td>Merges incoming map into existing job_metadata jsonb</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td>data-connectors</td>
+                                <td>Extraction completes</td>
+                                <td>Gets incremental attributes from connector plugin</td>
+                            </tr>
+                            <tr>
+                                <td>9</td>
+                                <td>data-connectors</td>
+                                <td>convertIncrAttrToString()</td>
+                                <td>Serializes map to JSON string via ObjectMapper</td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>data-connectors</td>
+                                <td>Put to jobMetadata map</td>
+                                <td>Adds INCREMENTAL_EXTRACT_ATTRIBUTES key</td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>data-connectors</td>
+                                <td>dataJobServicesClient.updateJob()</td>
+                                <td>Persists full jobMetadata including attributes</td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>data-services</td>
+                                <td>Job reaches terminal state</td>
+                                <td>Calls publishDataStreamStat()</td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>data-services</td>
+                                <td>CdcKafkaPublisher.publish()</td>
+                                <td>Serializes jobMetadata into CDC event</td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>data-connectors</td>
+                                <td>CdcEventsListener consumes</td>
+                                <td>Extracts INCREMENTAL_EXTRACT_ATTRIBUTES</td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>data-connectors</td>
+                                <td>updateIncrementalExtractAttributes()</td>
+                                <td>Persists to data stream entity for next job</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Unstructured Connectors Section -->
+            <section id="unstructured" class="section">
+                <h2>📦 Partial Ingest for Unstructured Connectors</h2>
+
+                <p>This section documents the <strong>existing</strong> partial ingest flow for unstructured connectors, which serves as the foundation for the structured connector implementation.</p>
+
+                <h3>Two-Source Flow</h3>
+                <p>Partial ingest details are saved to the <code>data_stream_job_stat</code> table through two sources that are merged:</p>
+
+                <div class="flow-step">
+                    <strong>Source 1: Spark Job</strong><br>
+                    Produces row-level stats (<code>rowsDroppedPartial</code>, <code>rowsDroppedErrorsInfo</code>)
+                </div>
+
+                <div class="flow-step">
+                    <strong>Source 2: data-connectors Extraction</strong><br>
+                    Produces status overrides (<code>statusDetail</code>, <code>statusReason</code>)
+                </div>
+
+                <h3>Override Merge Logic</h3>
+                <p><code>DataConnectorsStreamProvisioner.jobStatsOverride()</code> conditionally overwrites Spark stats:</p>
+
+                <pre><code class="language-java">if (dataStreamJob.getStatus().equals(SUCCESS)) {
+    String statusDetail = dataStreamJob.getJobMetadata()
+        .get(Constants.DATA_STREAM_JOB_STATUS_DETAIL_OVERRIDE);
+    String statusReason = dataStreamJob.getJobMetadata()
+        .get(Constants.DATA_STREAM_JOB_STATUS_REASON_OVERRIDE);
+
+    if (StringUtils.isNotBlank(statusDetail)) {
+        dataStreamJobStat.setStatusDetail(statusDetail);
+    }
+    if (StringUtils.isNotBlank(statusReason)) {
+        dataStreamJobStat.setStatusReason(statusReason);
+    }
+}</code></pre>
+
+                <h4>Conditions for Override</h4>
+                <ul>
+                    <li>✅ Job status is <code>SUCCESS</code></li>
+                    <li>✅ Override values are non-blank</li>
+                    <li>✅ Only applies to DataConnectors location types</li>
+                </ul>
+
+                <h3>Column Length Constraints</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Max Length</th>
+                            <th>DB Column</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>statusDetail</td>
+                            <td>5000 chars</td>
+                            <td>status_detail</td>
+                        </tr>
+                        <tr>
+                            <td>statusReason</td>
+                            <td>1024 chars</td>
+                            <td>status_reason</td>
+                        </tr>
+                        <tr>
+                            <td>rowsDroppedErrorsInfo</td>
+                            <td>1024 chars</td>
+                            <td>rows_dropped_errors_info</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>REST Endpoint</h3>
+                <p><code>GET /streams/{id}/status/{statusId}/logs</code></p>
+                <p>Returns only <code>statusDetail</code> (up to 5000 chars). The <code>statusReason</code> is NOT included in this endpoint's response.</p>
+            </section>
+
+            <!-- UI Details Section -->
+            <section id="ui-details" class="section">
+                <h2>🎨 UI Success Icon Rendering</h2>
+
+                <h3>Feature Gate</h3>
+                <pre><code class="language-javascript">import enableDcfPartialIngestForUnstructuredConnectors from
+  "@salesforce/gate/com.salesforce.cdp.connectorsFramework.enableDcfPartialIngestForUnstructuredConnectors";
+
+const isDcfPartialIngestForUnstructuredConnectorsOpen =
+  enableDcfPartialIngestForUnstructuredConnectors.isOpen({ fallback: false });</code></pre>
+
+                <p><strong>Gate ID:</strong> <code>com.salesforce.cdp.connectorsFramework.enableDcfPartialIngestForUnstructuredConnectors</code><br>
+                <strong>Default:</strong> false (disabled by default)</p>
+
+                <h3>Status Reason Check Logic</h3>
+                <pre><code class="language-javascript">get hasStatusReason() {
+    return isDcfPartialIngestForUnstructuredConnectorsOpen &&
+           this.statusReason &&
+           this.statusReason.trim() === "DATA_INGEST_SUCCESSFUL_WITH_ERRORS";
+}</code></pre>
+
+                <h3>UI States</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>statusReason</th>
+                            <th>Icon</th>
+                            <th>User Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>FAILURE</td>
+                            <td>Any error reason</td>
+                            <td>❌ Red error icon</td>
+                            <td>Click to view error details, download log</td>
+                        </tr>
+                        <tr>
+                            <td>SUCCESS</td>
+                            <td>DATA_INGEST_SUCCESSFUL_WITH_ERRORS</td>
+                            <td>ⓘ Blue info icon</td>
+                            <td>Click to view warning details, download log</td>
+                        </tr>
+                        <tr>
+                            <td>SUCCESS</td>
+                            <td>null or empty</td>
+                            <td>✓ No icon</td>
+                            <td>None</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Popover Component</h3>
+                <p>The <code>popoverError</code> component is reusable for both error and info icons:</p>
+
+                <ul>
+                    <li><strong>Type:</strong> 'error', 'warning', or 'info'</li>
+                    <li><strong>Icon:</strong> Red error circle or blue info circle</li>
+                    <li><strong>Popover Title:</strong> "Error Details" or "Success Details"</li>
+                    <li><strong>Popover Body:</strong> The statusReason text</li>
+                    <li><strong>Action Link:</strong> "Download Log"</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <strong>💡 Silent Mode</strong>
+                    <code>silent: true</code> means the icon displays immediately but the popover doesn't auto-open. Users must click the icon to see details.
+                </div>
+            </section>
+
+            <!-- Database Changes Section -->
+            <section id="db-changes" class="section">
+                <h2>🗄️ Database Changes (Proposed)</h2>
+
+                <div class="callout callout-warning">
+                    <strong>⚠️ Proposal Under Consideration</strong>
+                    This section documents a proposal to increase the <code>status_detail</code> column from 5000 to 10000 characters to accommodate full Spark stack traces.
+                </div>
+
+                <h3>Context</h3>
+                <p>The current 5000-character limit truncates nested Java/Spark exception chains, often cutting off the root cause. Increasing to 10,000 characters would accommodate most full stack traces.</p>
+
+                <h3>Affected Tables</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Migration</th>
+                            <th>Current</th>
+                            <th>Proposed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>data.data_stream_job_stat</td>
+                            <td>V022</td>
+                            <td>VARCHAR(5000)</td>
+                            <td>VARCHAR(10000)</td>
+                        </tr>
+                        <tr>
+                            <td>data.data_stream_job_stat_recent</td>
+                            <td>V097</td>
+                            <td>VARCHAR(5000)</td>
+                            <td>VARCHAR(10000)</td>
+                        </tr>
+                        <tr>
+                            <td>data.data_stream_interactive_job</td>
+                            <td>V098</td>
+                            <td>VARCHAR(5000)</td>
+                            <td>VARCHAR(10000)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Migration SQL</h3>
+                <p><strong>File:</strong> <code>V114__increase_status_detail_column_length.sql</code></p>
+
+                <pre><code class="language-sql">-- Increase status_detail column from VARCHAR(5000) to VARCHAR(10000)
+-- This is a metadata-only operation in PostgreSQL (no table rewrite, no lock).
+
+ALTER TABLE data.data_stream_job_stat
+    ALTER COLUMN status_detail TYPE VARCHAR(10000);
+
+ALTER TABLE data.data_stream_job_stat_recent
+    ALTER COLUMN status_detail TYPE VARCHAR(10000);
+
+ALTER TABLE data.data_stream_interactive_job
+    ALTER COLUMN status_detail TYPE VARCHAR(10000);</code></pre>
+
+                <div class="callout callout-danger">
+                    <strong>🚨 Critical: Deploy Order Matters</strong>
+                    <ol>
+                        <li><strong>First:</strong> Deploy admin-service-init migration (column widening)</li>
+                        <li><strong>Then:</strong> Deploy data-services code (truncation constant updates)</li>
+                    </ol>
+                    <p>If data-services deploys first but migration hasn't run, PostgreSQL will reject writes > 5000 chars.</p>
+                </div>
+            </section>
+
+            <!-- References Section -->
+            <section id="references" class="section">
+                <h2>📚 References & Resources</h2>
+
+                <h3>Design Documents</h3>
+                <ul>
+                    <li><a href="https://docs.google.com/document/d/17jI4E0EoXMx4JKeS8t-k31PKMDRyGs83NR0LTs85n-o/edit?tab=t.0#heading=h.p7au6x9xmu66">HLD: Detailed Extraction Progress for Data Cloud Connectors</a></li>
+                    <li><a href="https://docs.google.com/document/d/19jkyk1PagTmD-W5ViRue8Upv8H9Ak25Kh2rWg1n6nM0/edit?tab=t.0#heading=h.h8z3k4fipuhj">[262] Partial Ingest for structured connectors</a></li>
+                    <li><a href="https://docs.google.com/document/d/17E3m1Pl5JKY_DgXTGsRJzSGG0a636uNsKwiUl9tqR1I/edit?tab=t.0">[260] Partial Ingest & Guardrails support for Unstructured Connectors</a></li>
+                </ul>
+
+                <h3>Related GUS Items</h3>
+                <ul>
+                    <li><a href="https://gus.lightning.force.com/lightning/r/ADM_Team_Dependency__c/a0nEE000001G00HYAS/view">TD-0323935</a> - DCF Team Dependency</li>
+                    <li><a href="https://gus.lightning.force.com/lightning/r/ADM_Team_Dependency__c/a0nEE000001G01tYAC/view">TD-0323936</a> - Data Services Team Dependency</li>
+                </ul>
+            </section>
+
+            <!-- Footer -->
+            <footer style="margin-top: 60px; padding: 30px; background: var(--bg-color); border-radius: 8px; text-align: center;">
+                <p style="color: #666; font-size: 14px;">
+                    Documentation generated on June 23, 2026<br>
+                    Based on design by @Rupa Singh (rupa.singh@salesforce.com)<br>
+                    <a href="https://docs.google.com/document/d/16wgk49mFcZBot_miPZQ3Zc3evoCzHWzqE68qJurIB50/edit?tab=t.0">View Original Google Doc</a>
+                </p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Navigation highlighting on scroll
+        const sections = document.querySelectorAll('.section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function highlightNav() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', highlightNav);
+
+        // Smooth scrolling
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Collapsible sections
+        const collapsibles = document.querySelectorAll('.collapsible');
+        collapsibles.forEach(collapsible => {
+            collapsible.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                content.classList.toggle('show');
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const mainContent = document.querySelector('.main-content');
+
+            if (searchTerm === '') {
+                sections.forEach(section => {
+                    section.style.display = 'block';
+                });
+                return;
+            }
+
+            sections.forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
