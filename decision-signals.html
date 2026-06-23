@@ -510,6 +510,231 @@
     </table>
   </div>
 
+  <!-- CONFIDENCE SCORING -->
+  <div class="section" style="margin-top:60px">
+    <h2 style="color:var(--teal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">🎯 Confidence Scoring Logic</h2>
+    <p style="color:var(--ink-mid);margin-bottom:24px">Confidence answers: <strong style="color:var(--ink-hi)">"Did a human intentionally make this change?"</strong> — not whether the change matters (that's importance). A high confidence means we're very sure this was a deliberate decision, not an API glitch, platform auto-optimization, or inherited change.</p>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:24px 0 12px">What Confidence Measures</h3>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:24px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13.5px">
+        <div>
+          <div style="color:var(--teal);font-weight:600;margin-bottom:6px">High confidence (0.85–0.99)</div>
+          <div style="color:var(--ink-mid);line-height:1.7">"We're almost certain a human did this on purpose"<br>Example: Campaign paused at 2pm on a Tuesday — clearly manual</div>
+        </div>
+        <div>
+          <div style="color:var(--signal);font-weight:600;margin-bottom:6px">Low confidence (0.50–0.70)</div>
+          <div style="color:var(--ink-mid);line-height:1.7">"Something changed but we can't be sure it was intentional"<br>Example: Bid adjustment changed — could be automated rules</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px">Scoring Factors (weighted sum → 0.0–1.0)</h3>
+    <table>
+      <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th><th>High signal</th><th>Low signal</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Field specificity</strong></td><td>25%</td><td>How specific is the changed field to human action?</td><td>campaign.status (always manual)</td><td>metrics.impressions (not a decision)</td></tr>
+        <tr><td><strong>Change pattern</strong></td><td>20%</td><td>Does the change match a known human pattern?</td><td>Round numbers ($100→$200), clear on/off states</td><td>Fractional changes (bid 1.23→1.24 = likely algo)</td></tr>
+        <tr><td><strong>Time-of-day signal</strong></td><td>15%</td><td>When did the change happen?</td><td>Business hours, weekday = likely human</td><td>3am Sunday = likely automated rule or platform</td></tr>
+        <tr><td><strong>Correlated changes</strong></td><td>15%</td><td>Did other fields change in a logical cluster?</td><td>Budget + bid + status together = human campaign setup</td><td>Single micro-adjustment in isolation = algo</td></tr>
+        <tr><td><strong>Platform automation check</strong></td><td>15%</td><td>Could the platform's own system have done this?</td><td>No active rules/scripts for this entity</td><td>Auto-bidding enabled, budget optimizer active</td></tr>
+        <tr><td><strong>Change velocity</strong></td><td>10%</td><td>How fast did the change happen?</td><td>Single discrete change = human click</td><td>Gradual increment over hours = algorithmic</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Decision-type Base Confidence</h3>
+    <p style="color:var(--ink-mid);margin-bottom:16px">Some decision types are inherently more "human" than others. This is the starting baseline before factors adjust:</p>
+    <table>
+      <thead><tr><th>Decision Type</th><th>Base</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>STATUS_CHANGE</td><td>0.95</td><td>Pausing/enabling is almost always a deliberate human action</td></tr>
+        <tr><td>CREATIVE_MANAGE</td><td>0.92</td><td>Uploading new creative requires human effort</td></tr>
+        <tr><td>BUDGET_SET</td><td>0.88</td><td>Budget changes are typically intentional (but can be rules-based)</td></tr>
+        <tr><td>BID_STRATEGY_CHANGE</td><td>0.90</td><td>Switching strategy type is a manual settings change</td></tr>
+        <tr><td>AUDIENCE_TARGET</td><td>0.85</td><td>Audience selection is intentional (but expansion can be auto)</td></tr>
+        <tr><td>KEYWORD_MANAGE</td><td>0.82</td><td>Adding/pausing keywords is human, but some auto-apply recommendations</td></tr>
+        <tr><td>BUDGET_REALLOCATE</td><td>0.80</td><td>Multi-entity budget shift is likely human, but CBO can do it</td></tr>
+        <tr><td>FREQUENCY_CAP</td><td>0.88</td><td>Cap adjustments are manual settings changes</td></tr>
+        <tr><td>GEO_TARGET</td><td>0.86</td><td>Geographic changes are deliberate targeting decisions</td></tr>
+        <tr><td>PLACEMENT_MANAGE</td><td>0.84</td><td>Placement selection is manual</td></tr>
+        <tr><td>SCHEDULE_DAYPART</td><td>0.87</td><td>Schedule changes are manual configuration</td></tr>
+        <tr><td>SIGNAL_CONFIG</td><td>0.91</td><td>Conversion/attribution config is always intentional</td></tr>
+        <tr><td>PACING_CHANGE</td><td>0.78</td><td>Can be auto-pacing by platform, so lower base</td></tr>
+        <tr><td>AUDIENCE_EXPAND</td><td>0.72</td><td>Meta's "Advantage+" can auto-expand — hard to tell</td></tr>
+        <tr><td>AUDIENCE_SUPPRESS</td><td>0.83</td><td>Suppressions are typically manual, but can be rule-triggered</td></tr>
+        <tr><td>BID_ADJUST</td><td>0.65</td><td>Many bid adjustments are algorithmic — lowest confidence type</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Penalties (reduce score)</h3>
+    <table>
+      <thead><tr><th>Signal</th><th>Penalty</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Change at 00:00–05:00 local</td><td>−0.15</td><td>Likely a scheduled rule, not a human at their desk</td></tr>
+        <tr><td>Auto-bidding / CBO active on entity</td><td>−0.20</td><td>Platform optimizer may have made this change</td></tr>
+        <tr><td>Change matches a Google/Meta "recommendation applied"</td><td>−0.25</td><td>Could be auto-applied recommendation, not a deliberate decision</td></tr>
+        <tr><td>Fractional/irregular value (e.g. $127.43)</td><td>−0.10</td><td>Humans set round numbers; algos produce decimals</td></tr>
+        <tr><td>Multiple micro-changes in rapid sequence</td><td>−0.12</td><td>Automated scripts or bulk tools, not individual decisions</td></tr>
+        <tr><td>Entity has active automated rules</td><td>−0.18</td><td>Rules engine may have triggered this change</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Boosters (increase score)</h3>
+    <table>
+      <thead><tr><th>Signal</th><th>Boost</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Round number change ($100, $500, 50%)</td><td>+0.08</td><td>Humans think in round numbers</td></tr>
+        <tr><td>Change during business hours (9am–6pm local)</td><td>+0.05</td><td>Human at desk</td></tr>
+        <tr><td>Change logged in platform's change history with user email</td><td>+0.15</td><td>Platform confirms a human account made it</td></tr>
+        <tr><td>Correlated logical cluster (3+ related fields)</td><td>+0.10</td><td>Humans make holistic changes; algos tweak one thing</td></tr>
+        <tr><td>First change of this type ever (no automation pattern)</td><td>+0.07</td><td>Can't be a recurring rule if it never happened before</td></tr>
+        <tr><td>Status toggled (ENABLED↔PAUSED)</td><td>+0.10</td><td>Almost never automated unless explicitly scheduled</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Example Calculations</h3>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-family:'IBM Plex Mono';font-size:12.5px;color:var(--ink-mid);line-height:2.2">
+      <div style="margin-bottom:16px">
+        <span style="color:var(--ink-hi);font-weight:600">Detection 4: STATUS_CHANGE — "Paused Old Brand - DSA"</span><br>
+        Base: <span style="color:var(--teal)">0.95</span> (STATUS_CHANGE)<br>
+        + Business hours change: <span style="color:var(--teal)">+0.05</span><br>
+        + Status toggle boost: <span style="color:var(--teal)">+0.10</span><br>
+        − cap at 0.99: clipped<br>
+        <span style="color:var(--ink-hi)">Final: 0.97</span>
+      </div>
+      <div style="margin-bottom:16px">
+        <span style="color:var(--ink-hi);font-weight:600">Detection 7: BUDGET_REALLOCATE — "Retargeting → Prospecting"</span><br>
+        Base: <span style="color:var(--teal)">0.80</span> (BUDGET_REALLOCATE)<br>
+        + Correlated cluster (two budgets changed same day): <span style="color:var(--teal)">+0.10</span><br>
+        − CBO active on campaign: <span style="color:var(--signal)">−0.12</span> (partial penalty — net budget was constant, suggesting human intent)<br>
+        + Round numbers ($40, $200): <span style="color:var(--teal)">+0.08</span><br>
+        <span style="color:var(--ink-hi)">Final: 0.83</span> (capped: min with penalties, still suggests human but CBO adds doubt)
+      </div>
+      <div>
+        <span style="color:var(--ink-hi);font-weight:600">Detection 5: AUDIENCE_TARGET — "New lookalike added"</span><br>
+        Base: <span style="color:var(--teal)">0.85</span> (AUDIENCE_TARGET)<br>
+        + Business hours: <span style="color:var(--teal)">+0.05</span><br>
+        − Advantage+ could auto-expand: <span style="color:var(--signal)">−0.08</span><br>
+        + New audience ID (never existed before): <span style="color:var(--teal)">+0.07</span><br>
+        <span style="color:var(--ink-hi)">Final: 0.86</span> (likely human — creating a new LAL requires manual effort)
+      </div>
+    </div>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Thresholds for Actions</h3>
+    <table>
+      <thead><tr><th>Range</th><th>Interpretation</th><th>System behavior</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--teal);font-weight:600">0.90 – 0.99</td><td>Almost certainly a human decision</td><td>Show to user for confirmation, pre-select "Confirm"</td></tr>
+        <tr><td style="color:var(--teal);font-weight:600">0.75 – 0.89</td><td>Likely a human decision</td><td>Show to user, neutral state (no pre-selection)</td></tr>
+        <tr><td style="color:var(--signal);font-weight:600">0.55 – 0.74</td><td>Uncertain — could be human or automated</td><td>Show with "automation suspected" warning, ask user to verify</td></tr>
+        <tr><td style="color:#F2685B;font-weight:600">Below 0.55</td><td>Likely automated / not a decision</td><td>Don't surface by default. Log to "Automated Changes" archive only.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence vs Importance — How They Differ</h3>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-size:13.5px;color:var(--ink-mid);line-height:1.8">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line)"></th><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line);color:var(--teal)">Confidence</th><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line);color:var(--signal)">Importance</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Question</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Did this happen on purpose?</td><td style="padding:8px;border-bottom:1px solid var(--line)">How much does it matter?</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Inputs</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Time-of-day, field type, change pattern, automation context</td><td style="padding:8px;border-bottom:1px solid var(--line)">Spend at risk, mid-flight status, magnitude, learning phase</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Used for</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Filtering — should we show this to the user at all?</td><td style="padding:8px;border-bottom:1px solid var(--line)">Prioritization — which confirmed decisions need attention first?</td></tr>
+          <tr><td style="padding:8px"><strong style="color:var(--ink-hi)">Example</strong></td><td style="padding:8px">Bid changed at 3am by 0.03 → conf 0.52 (probably algo, don't show)</td><td style="padding:8px">Campaign paused mid-flight → importance CRITICAL (review NOW)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- IMPORTANCE SCORING -->
+  <div class="section" style="margin-top:60px">
+    <h2 style="color:var(--signal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">⚡ Importance Scoring Logic</h2>
+    <p style="color:var(--ink-mid);margin-bottom:24px">Every detected decision receives an importance score (CRITICAL / HIGH / MEDIUM / LOW) based on contextual signals available at detection time. This helps teams prioritize which decisions to review first.</p>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:24px 0 12px">Scoring Factors</h3>
+    <table>
+      <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Spend at Risk</strong></td><td>30%</td><td>Daily/weekly budget affected by this change</td><td>$400/day budget = high; $15/day = low</td></tr>
+        <tr><td><strong>Mid-flight Disruption</strong></td><td>25%</td><td>Was the entity active & spending when changed?</td><td>Paused before end_date while spending = critical; Scheduled future change = low</td></tr>
+        <tr><td><strong>Change Magnitude</strong></td><td>20%</td><td>Percentage or absolute size of the change</td><td>+100% budget = high; +10% bid adjust = low</td></tr>
+        <tr><td><strong>Learning Phase Trigger</strong></td><td>15%</td><td>Does this change reset the platform's optimization model?</td><td>Bid strategy switch = resets; Creative add = doesn't</td></tr>
+        <tr><td><strong>Destructive vs Additive</strong></td><td>10%</td><td>Does it remove/pause something, or add new?</td><td>Pausing campaign = destructive; Adding keyword = additive</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Level Definitions</h3>
+    <table>
+      <thead><tr><th>Level</th><th>Score Range</th><th>Visual</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td style="color:#F2685B;font-weight:600">CRITICAL</td><td>0.80 – 1.00</td><td>●●●●● (5 red dots)</td><td>Immediate review needed. Significant spend at risk, mid-flight disruption, or learning phase reset on high-budget entity.</td></tr>
+        <tr><td style="color:#FF8A3D;font-weight:600">HIGH</td><td>0.55 – 0.79</td><td>●●●●○ (4 orange dots)</td><td>Review within 24h. Large budget changes, strategy shifts, or audience narrowing that redirects spend.</td></tr>
+        <tr><td style="color:#34D8C4;font-weight:600">MEDIUM</td><td>0.30 – 0.54</td><td>●●●○○ (3 teal dots)</td><td>Standard tracking. Additive changes, routine optimizations, or moderate adjustments.</td></tr>
+        <tr><td style="color:#5E6B78;font-weight:600">LOW</td><td>0.00 – 0.29</td><td>●●○○○ (2 gray dots)</td><td>Informational. Minor tweaks, scheduled changes, or low-budget entities.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Decision-specific Scoring Rules</h3>
+    <table>
+      <thead><tr><th>Decision Type</th><th>Auto-CRITICAL if…</th><th>Auto-HIGH if…</th><th>Typical default</th></tr></thead>
+      <tbody>
+        <tr><td>BUDGET_SET</td><td>change ≥ +100% AND daily_spend > $100</td><td>change ≥ +50% OR budget > $200/day</td><td>MEDIUM</td></tr>
+        <tr><td>BUDGET_REALLOCATE</td><td>source loses > 50% AND was profitable</td><td>any reallocation > $50/day</td><td>HIGH</td></tr>
+        <tr><td>BID_STRATEGY_CHANGE</td><td>always (resets learning phase)</td><td>—</td><td>CRITICAL</td></tr>
+        <tr><td>BID_ADJUST</td><td>adjustment > ±50% on top entity</td><td>adjustment > ±25%</td><td>MEDIUM</td></tr>
+        <tr><td>PACING_CHANGE</td><td>accelerated pacing + budget > $200/day</td><td>any pacing change on active campaign</td><td>MEDIUM</td></tr>
+        <tr><td>AUDIENCE_TARGET</td><td>audience replaced (not expanded) + learning reset</td><td>lookalike narrowed OR new audience added</td><td>HIGH</td></tr>
+        <tr><td>AUDIENCE_EXPAND</td><td>expands to broad/open targeting</td><td>adds new interest or lookalike layer</td><td>MEDIUM</td></tr>
+        <tr><td>AUDIENCE_SUPPRESS</td><td>suppressions removed (opens flood)</td><td>new suppression on large segment</td><td>MEDIUM</td></tr>
+        <tr><td>KEYWORD_MANAGE</td><td>pause of >50% of keywords</td><td>broad match addition on high-spend group</td><td>MEDIUM</td></tr>
+        <tr><td>PLACEMENT_MANAGE</td><td>placements reduced to single channel</td><td>new placement with no history</td><td>LOW</td></tr>
+        <tr><td>GEO_TARGET</td><td>removes major market (&gt;20% of spend)</td><td>adds new country/market</td><td>MEDIUM</td></tr>
+        <tr><td>SCHEDULE_DAYPART</td><td>reduces active hours by >50%</td><td>major schedule change during peak</td><td>LOW</td></tr>
+        <tr><td>CREATIVE_MANAGE</td><td>removes all creatives (ad goes blank)</td><td>replaces primary creative on top ad</td><td>MEDIUM</td></tr>
+        <tr><td>STATUS_CHANGE</td><td>paused before end_date while spending</td><td>enabled with no recent performance data</td><td>CRITICAL (pause) / HIGH (enable)</td></tr>
+        <tr><td>FREQUENCY_CAP</td><td>cap removed entirely</td><td>cap change > 60% on awareness campaign</td><td>MEDIUM</td></tr>
+        <tr><td>SIGNAL_CONFIG</td><td>conversion tracking removed</td><td>attribution window changed</td><td>HIGH</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Contextual Boosters</h3>
+    <p style="color:var(--ink-mid);margin-bottom:16px">These factors can upgrade importance by one level:</p>
+    <table>
+      <thead><tr><th>Booster</th><th>Condition</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>Performance degradation</td><td>CPA trending up >20% over 7 days at time of change</td><td>+1 level (reactive change under pressure)</td></tr>
+        <tr><td>Peak season</td><td>Change made during brand's identified peak period</td><td>+1 level (amplified impact)</td></tr>
+        <tr><td>Multiple simultaneous</td><td>3+ decisions on same entity within 48h</td><td>+1 level (compound risk)</td></tr>
+        <tr><td>No history</td><td>First-ever change of this type for this entity</td><td>+1 level (no baseline to compare)</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Importance Reason String</h3>
+    <p style="color:var(--ink-mid);margin-bottom:16px">Each importance score includes a human-readable reason string explaining WHY this level was assigned. Format:</p>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono';font-size:13px;color:var(--ink-mid);line-height:2">
+      <code style="color:var(--teal)">{LEVEL}</code> · <code style="color:var(--ink-hi)">{primary_factor}</code> · <code style="color:var(--ink-hi)">{spend_context}</code> · <code style="color:var(--ink-hi)">{additional_signal}</code><br>
+      <span style="color:var(--ink-lo)">Examples:</span><br>
+      <span style="color:#F2685B">CRITICAL</span> · paused before end_date · was spending $45/day · 0 conversions last 8 days<br>
+      <span style="color:#FF8A3D">HIGH</span> · +100% budget on active campaign · $200/day at stake<br>
+      <span style="color:#34D8C4">MEDIUM</span> · additive (new keywords) · broad match opens spend to unknowns<br>
+      <span style="color:#5E6B78">LOW</span> · minor schedule adjustment · off-peak hours only · &lt;$20/day entity
+    </div>
+  </div>
+
+  <!-- JOURNAL SCHEMA UPDATE: importance field -->
+  <div class="section" style="margin-top:40px">
+    <h3 style="color:var(--ink-hi);font-size:16px;margin-bottom:12px">Updated Journal Schema — Importance Fields</h3>
+    <p style="color:var(--ink-mid);margin-bottom:16px">Two new fields added to the Decision Journal:</p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>importance_level</td><td>enum</td><td>CRITICAL | HIGH | MEDIUM | LOW</td></tr>
+        <tr><td>importance_reason</td><td>string</td><td>Human-readable explanation of why this level was assigned (see format above)</td></tr>
+        <tr><td>importance_score</td><td>float</td><td>0.0–1.0 raw score before bucketing into levels</td></tr>
+        <tr><td>importance_factors</td><td>JSON</td><td>Breakdown: {spend_at_risk, mid_flight, magnitude, learning_phase, destructive, boosters[]}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <div style="margin-top:40px;text-align:center;padding:20px;border-top:1px solid var(--line)">
     <a href="tracker.html" class="nav-link" style="margin-right:12px">← Decision Tracker Demo</a>
     <a href="index.html" class="nav-link">Day Zero Audit Flow →</a>

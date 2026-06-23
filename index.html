@@ -254,6 +254,40 @@
 
   .foot{padding:16px 24px;border-top:1px solid var(--line);text-align:center;font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);letter-spacing:.5px}
 
+  /* Slack modal */
+  .slack-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s}
+  .slack-overlay.open{opacity:1;pointer-events:all}
+  .slack-modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 32px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .slack-modal h3{font-family:"Space Grotesk";font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+  .slack-modal h3 .slack-ico{width:22px;height:22px;border-radius:5px;background:#4A154B;display:grid;place-items:center;font-size:12px;color:#fff;font-weight:700}
+  .slack-modal .sub{font-size:13.5px;color:var(--ink-mid);margin-bottom:20px}
+  .slack-modal label{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);display:block;margin-bottom:6px}
+  .slack-modal input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-hi);font-family:"IBM Plex Sans";font-size:14px;outline:none;transition:.2s}
+  .slack-modal input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(52,216,196,.15)}
+  .slack-modal input::placeholder{color:var(--ink-lo)}
+  .slack-modal .recent{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .slack-modal .rch{font-family:"IBM Plex Mono";font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);color:var(--ink-mid);cursor:pointer;transition:.15s}
+  .slack-modal .rch:hover{border-color:var(--teal);color:var(--teal)}
+  .slack-modal .preview{margin-top:18px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--canvas);font-size:12.5px;color:var(--ink-mid);line-height:1.6;max-height:140px;overflow-y:auto}
+  .slack-modal .preview .phead{color:var(--teal);font-weight:600;font-size:13px;margin-bottom:6px}
+  .slack-modal .btn-row{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+  .slack-modal .btn-row button{font-family:"Space Grotesk";font-weight:500;font-size:13.5px;border-radius:9px;padding:10px 20px;cursor:pointer;border:none;transition:.18s}
+  .slack-modal .btn-cancel{background:transparent;color:var(--ink-mid);border:1px solid var(--line)!important}
+  .slack-modal .btn-cancel:hover{color:var(--ink-hi)}
+  .slack-modal .btn-send{background:var(--teal);color:#04211d;font-weight:600}
+  .slack-modal .btn-send:hover{filter:brightness(1.1)}
+  .slack-modal .btn-send:disabled{opacity:.4;cursor:not-allowed}
+  .slack-modal .sent-confirm{display:none;text-align:center;padding:20px 0}
+  .slack-modal .sent-confirm .check{width:48px;height:48px;border-radius:50%;background:var(--teal);margin:0 auto 12px;display:grid;place-items:center}
+  .slack-modal .sent-confirm .check::after{content:"";width:12px;height:20px;border:3px solid #04211d;border-top:0;border-left:0;transform:rotate(42deg) translateY(-2px)}
+  .slack-modal .sent-confirm p{color:var(--ink-hi);font-size:14px}
+  .slack-modal .sent-confirm .ch-name{color:var(--teal);font-family:"IBM Plex Mono";font-size:13px;margin-top:4px}
+
+  /* send to slack button */
+  .btn-slack{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line);color:var(--ink-mid);font-family:"Space Grotesk";font-weight:500;font-size:13.5px;border-radius:9px;padding:10px 18px;cursor:pointer;transition:.18s;margin-top:12px}
+  .btn-slack:hover{border-color:var(--teal);color:var(--teal)}
+  .btn-slack .sico{width:16px;height:16px;border-radius:3px;background:#4A154B;display:grid;place-items:center;font-size:9px;color:#fff;font-weight:700}
+
   @media(max-width:680px){
     .grid{grid-template-columns:1fr}
     .spine{display:none}
@@ -488,6 +522,7 @@
 
         <div class="actions">
           <button class="btn primary" id="toDecisions">Turn findings into decisions</button>
+          <button class="btn-slack" id="slackAudit"><span class="sico">S</span> Send audit to Slack</button>
           <span class="hint">10 findings · 0 charts to interpret</span>
         </div>
       </section>
@@ -634,7 +669,10 @@
             <p style="font-size:12px;color:var(--ink-lo);margin-top:10px;font-family:'IBM Plex Mono'">Every decision maps to one or more action types. The action layer executes them on Google &amp; Meta via API.</p>
           </div>
 
-          <div class="restart"><button class="btn ghost" id="restart">Run it again</button></div>
+          <div class="restart">
+            <button class="btn-slack" id="slackDecisions" style="margin-right:12px"><span class="sico">S</span> Send decisions to Slack</button>
+            <button class="btn ghost" id="restart">Run it again</button>
+          </div>
         </div>
       </section>
 
@@ -642,6 +680,34 @@
   </div>
 
   <div class="foot">CONCEPT MOCKUP · numbers illustrative · built to pressure-test "value in hour one"</div>
+</div>
+
+<!-- Slack modal -->
+<div class="slack-overlay" id="slackOverlay">
+  <div class="slack-modal">
+    <div class="slack-form" id="slackForm">
+      <h3><span class="slack-ico">S</span> Send to Slack</h3>
+      <div class="sub" id="slackSub">Share the instant audit with your team</div>
+      <label>Channel or person</label>
+      <input type="text" id="slackTarget" placeholder="#paid-media or @john" autocomplete="off">
+      <div class="recent">
+        <span class="rch" data-ch="#paid-media">#paid-media</span>
+        <span class="rch" data-ch="#signal-alerts">#signal-alerts</span>
+        <span class="rch" data-ch="@alon">@alon</span>
+        <span class="rch" data-ch="#client-updates">#client-updates</span>
+      </div>
+      <div class="preview" id="slackPreview"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" id="slackCancel">Cancel</button>
+        <button class="btn-send" id="slackSend" disabled>Send message</button>
+      </div>
+    </div>
+    <div class="sent-confirm" id="slackSent">
+      <div class="check"></div>
+      <p>Sent to Slack</p>
+      <div class="ch-name" id="sentTo"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -789,6 +855,97 @@
 
   // restart
   document.getElementById('restart').addEventListener('click', function(){ location.reload(); });
+
+  // ─── SLACK INTEGRATION ───
+  var slackOverlay=document.getElementById('slackOverlay');
+  var slackTarget=document.getElementById('slackTarget');
+  var slackSend=document.getElementById('slackSend');
+  var slackPreview=document.getElementById('slackPreview');
+  var slackSub=document.getElementById('slackSub');
+  var slackMode=''; // 'audit' or 'decisions'
+
+  function openSlack(mode){
+    slackMode=mode;
+    document.getElementById('slackForm').style.display='';
+    document.getElementById('slackSent').style.display='none';
+    slackTarget.value='';
+    slackSend.disabled=true;
+    if(mode==='audit'){
+      slackSub.textContent='Share the instant audit findings with your team';
+      slackPreview.innerHTML=buildAuditPreview();
+    } else {
+      slackSub.textContent='Share the first decisions with your team';
+      slackPreview.innerHTML=buildDecisionsPreview();
+    }
+    slackOverlay.classList.add('open');
+    setTimeout(function(){slackTarget.focus()},200);
+  }
+
+  function buildAuditPreview(){
+    return '<div class="phead">🔍 Signal Day Zero — Instant Audit</div>'+
+      '<b>Google Ads (4 findings):</b><br>'+
+      '• 4 campaigns not passing conversions<br>'+
+      '• Broad match buying non-converting queries ($1.8k/wk leak)<br>'+
+      '• PMax claiming 31% branded conversions<br>'+
+      '• Losing 22% impression share to one competitor<br><br>'+
+      '<b>Meta (4 findings):</b><br>'+
+      '• CAPI not configured (~30% conversions blind)<br>'+
+      '• Top creative burning out (CTR −41%)<br>'+
+      '• 3 ad sets bidding against each other<br>'+
+      '• Audience Network spend with no return ($640/wk)<br><br>'+
+      '<b>Cross-channel:</b> Blended CPA +38% vs apparel peers';
+  }
+
+  function buildDecisionsPreview(){
+    var resolved=document.querySelectorAll('[data-deck].resolved');
+    var lines='';
+    resolved.forEach(function(d){
+      var title=d.querySelector('h3').textContent;
+      var types=[];
+      d.querySelectorAll('.atype').forEach(function(a){types.push(a.textContent)});
+      lines+='• ['+types.join(' + ')+'] '+title+'<br>';
+    });
+    if(!lines) lines='• (No decisions acted on yet)<br>';
+    return '<div class="phead">⚡ Signal Day Zero — First Decisions</div>'+lines+
+      '<br><span style="color:var(--teal)">'+resolved.length+' decisions executed</span> in the first session.';
+  }
+
+  document.getElementById('slackAudit').addEventListener('click',function(){openSlack('audit')});
+  document.getElementById('slackDecisions').addEventListener('click',function(){openSlack('decisions')});
+
+  slackTarget.addEventListener('input',function(){
+    slackSend.disabled=slackTarget.value.trim().length===0;
+  });
+
+  // quick-pick channels
+  document.querySelectorAll('.rch').forEach(function(ch){
+    ch.addEventListener('click',function(){
+      slackTarget.value=ch.dataset.ch;
+      slackSend.disabled=false;
+    });
+  });
+
+  document.getElementById('slackCancel').addEventListener('click',function(){
+    slackOverlay.classList.remove('open');
+  });
+  slackOverlay.addEventListener('click',function(e){
+    if(e.target===slackOverlay) slackOverlay.classList.remove('open');
+  });
+
+  slackSend.addEventListener('click',function(){
+    var target=slackTarget.value.trim();
+    if(!target) return;
+    slackSend.innerHTML='<span class="spin"></span> Sending…';
+    slackSend.disabled=true;
+    setTimeout(function(){
+      document.getElementById('slackForm').style.display='none';
+      document.getElementById('slackSent').style.display='';
+      document.getElementById('sentTo').textContent='Delivered to '+target;
+    },900);
+    setTimeout(function(){
+      slackOverlay.classList.remove('open');
+    },2800);
+  });
 })();
 </script>
 </body>
