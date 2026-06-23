@@ -223,6 +223,7 @@
   .deck .idx{font-family:"IBM Plex Mono";font-size:12px;color:var(--signal);padding-top:3px}
   .deck .main{flex:1;min-width:0}
   .deck h3{font-family:"Space Grotesk";font-weight:500;font-size:17.5px;line-height:1.25;margin-bottom:6px}
+  .deck .atype{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--signal);background:var(--signal-dim);border:1px solid rgba(255,138,61,.25);border-radius:5px;padding:2px 8px;display:inline-block;margin-bottom:8px}
   .deck .why{font-size:13.5px;color:var(--ink-mid)}
   .conf{display:flex;align-items:center;gap:9px;margin-top:13px}
   .conf .track{width:120px;height:5px;border-radius:4px;background:var(--panel-2);overflow:hidden}
@@ -505,6 +506,7 @@
             <div class="top">
               <div class="idx">01</div>
               <div class="main">
+                <div class="atype">KEYWORD_MANAGE</div>
                 <h3>Add 47 negative keywords to stop spend on non-converting queries</h3>
                 <p class="why">Reclaims the broad-match leak across 7 campaigns and points budget back at intent that converts.</p>
                 <div class="conf"><span class="track"><i style="width:89%"></i></span><span class="lab">confidence 0.89 · reclaims ~$1.8k/wk</span></div>
@@ -521,6 +523,7 @@
             <div class="top">
               <div class="idx">02</div>
               <div class="main">
+                <div class="atype">SIGNAL_CONFIG</div>
                 <h3>Fix conversion tracking on the 4 blind campaigns</h3>
                 <p class="why">Re-applies the account's standard conversion action so spend stops running unattributed.</p>
                 <div class="conf"><span class="track"><i style="width:87%"></i></span><span class="lab">confidence 0.87</span></div>
@@ -537,6 +540,7 @@
             <div class="top">
               <div class="idx">03</div>
               <div class="main">
+                <div class="atype">AUDIENCE_SUPPRESS</div>
                 <h3>Exclude brand terms from Performance Max</h3>
                 <p class="why">Stops PMax claiming branded searches, so its ROAS reads true and brand search keeps its own budget.</p>
                 <div class="conf"><span class="track"><i style="width:92%"></i></span><span class="lab">confidence 0.92</span></div>
@@ -555,6 +559,7 @@
             <div class="top">
               <div class="idx">04</div>
               <div class="main">
+                <div class="atype">SIGNAL_CONFIG</div>
                 <h3>Turn on the Conversions API to recover lost signal</h3>
                 <p class="why">Restores server-side events so optimization sees the ~30% of conversions browser tracking misses.</p>
                 <div class="conf"><span class="track"><i style="width:90%"></i></span><span class="lab">confidence 0.90 · recovers ~30% signal</span></div>
@@ -571,6 +576,7 @@
             <div class="top">
               <div class="idx">05</div>
               <div class="main">
+                <div class="atype">CREATIVE_MANAGE</div><div class="atype" style="margin-left:6px">FREQUENCY_CAP</div>
                 <h3>Refresh the 3 fatigued creatives &amp; cap frequency at 2.5</h3>
                 <p class="why">Rotates in fresh variants and stops over-serving saturated audiences before CTR collapses further.</p>
                 <div class="conf"><span class="track"><i style="width:85%"></i></span><span class="lab">confidence 0.85</span></div>
@@ -587,6 +593,7 @@
             <div class="top">
               <div class="idx">06</div>
               <div class="main">
+                <div class="atype">AUDIENCE_TARGET</div>
                 <h3>Merge the 3 overlapping ad sets to exit the learning phase</h3>
                 <p class="why">Consolidates split audiences so the campaign pools signal and stabilizes delivery faster.</p>
                 <div class="conf"><span class="track"><i style="width:88%"></i></span><span class="lab">confidence 0.88</span></div>
@@ -603,6 +610,30 @@
         <div class="summary" id="summary">
           <div class="big">That's the day-zero loop.</div>
           <p>Connect → 30-day backfill → audit → acted-on decisions, inside the first few minutes. Owned media now layers in over the coming weeks to deepen attribution and LTV — but the client already got value in hour one.</p>
+
+          <div style="margin-top:22px;border-top:1px solid var(--line);padding-top:18px">
+            <div style="font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:12px">Full action taxonomy · 16 decision types</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">BUDGET_SET</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">BUDGET_REALLOCATE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">BID_STRATEGY_CHANGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">BID_ADJUST</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">PACING_CHANGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">AUDIENCE_TARGET</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">AUDIENCE_EXPAND</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">AUDIENCE_SUPPRESS</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">KEYWORD_MANAGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">PLACEMENT_MANAGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">GEO_TARGET</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">SCHEDULE_DAYPART</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">CREATIVE_MANAGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">STATUS_CHANGE</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">FREQUENCY_CAP</span>
+              <span class="fchip" style="border-color:var(--signal-dim);color:var(--signal)">SIGNAL_CONFIG</span>
+            </div>
+            <p style="font-size:12px;color:var(--ink-lo);margin-top:10px;font-family:'IBM Plex Mono'">Every decision maps to one or more action types. The action layer executes them on Google &amp; Meta via API.</p>
+          </div>
+
           <div class="restart"><button class="btn ghost" id="restart">Run it again</button></div>
         </div>
       </section>
