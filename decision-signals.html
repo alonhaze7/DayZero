@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — Decision Detection Signals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#0B0E13;
+    --panel:#141A22;
+    --panel-2:#1B2430;
+    --line:#29333F;
+    --ink-hi:#ECF1F6;
+    --ink-mid:#9AA7B4;
+    --ink-lo:#5E6B78;
+    --teal:#34D8C4;
+    --teal-dim:#15564F;
+    --signal:#FF8A3D;
+    --signal-dim:#5E3315;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--canvas);
+    color:var(--ink-hi);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+    padding:40px 24px 80px;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  .bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:40px;
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .glyph{width:24px;height:24px;border-radius:6px;position:relative;flex:none;background:linear-gradient(135deg,var(--teal),#1FA796);box-shadow:0 0 0 1px rgba(52,216,196,.3),0 0 18px rgba(52,216,196,.25)}
+  .glyph::after{content:"";position:absolute;inset:8px;border-radius:2px;background:var(--canvas)}
+  .brand b{font-family:"Space Grotesk";font-weight:700;letter-spacing:.5px;font-size:15px}
+  .brand span{color:var(--ink-lo);font-size:12px}
+  .nav-link{color:var(--teal);text-decoration:none;font-family:"IBM Plex Mono";font-size:12px;border:1px solid var(--teal-dim);padding:6px 14px;border-radius:8px}
+  .nav-link:hover{background:rgba(52,216,196,.1)}
+
+  h1{font-family:"Space Grotesk";font-weight:700;font-size:36px;line-height:1.15;letter-spacing:-.5px;margin-bottom:12px}
+  .subtitle{color:var(--ink-mid);font-size:16px;margin-bottom:40px;max-width:60ch}
+
+  h2{font-family:"Space Grotesk";font-weight:700;font-size:22px;margin:48px 0 8px;padding-top:24px;border-top:1px solid var(--line)}
+  h2:first-of-type{border-top:0;margin-top:0}
+  h3{font-family:"Space Grotesk";font-weight:500;font-size:16px;margin:28px 0 12px;color:var(--ink-hi)}
+
+  .decision-type{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:24px;margin-bottom:16px}
+  .dt-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .atype{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--signal);background:var(--signal-dim);border:1px solid rgba(255,138,61,.25);border-radius:5px;padding:3px 10px;font-weight:500}
+  .dt-header .desc{font-size:14px;color:var(--ink-mid)}
+
+  .dt-section{margin-top:16px}
+  .dt-section .label{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:8px}
+  .field-list{display:flex;flex-wrap:wrap;gap:6px}
+  .fchip{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-mid);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .fchip.primary{border-color:var(--teal-dim);color:var(--teal)}
+
+  .logic{margin-top:14px;padding:14px;background:var(--panel-2);border-radius:9px;border-left:3px solid var(--teal);font-size:13.5px;color:var(--ink-mid);line-height:1.6}
+  .logic b{color:var(--ink-hi);font-weight:500}
+  .logic code{font-family:"IBM Plex Mono";font-size:12px;color:var(--teal);background:rgba(52,216,196,.1);padding:1px 5px;border-radius:3px}
+
+  .platform-badge{font-family:"IBM Plex Mono";font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--ink-lo);margin-left:auto}
+
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px}
+  .toc h3{margin:0 0 12px;font-size:14px;color:var(--ink-lo);font-family:"IBM Plex Mono";letter-spacing:1px;text-transform:uppercase}
+  .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+  .toc-item{font-family:"IBM Plex Mono";font-size:12px;color:var(--signal);padding:6px 10px;background:var(--panel-2);border-radius:6px;text-decoration:none;transition:.15s}
+  .toc-item:hover{background:var(--signal-dim)}
+
+  .stored-fields{margin-top:40px;border:1px solid var(--teal-dim);border-radius:14px;background:rgba(52,216,196,.04);padding:24px}
+  .stored-fields h3{color:var(--teal);margin:0 0 16px}
+  .sf-table{width:100%;border-collapse:collapse;font-size:13px}
+  .sf-table th{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .sf-table td{padding:10px;border-bottom:1px solid rgba(41,51,63,.5);vertical-align:top;color:var(--ink-mid)}
+  .sf-table td:first-child{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-hi)}
+
+  @media(max-width:680px){
+    h1{font-size:26px}
+    .toc-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <div class="brand"><div class="glyph"></div><div><b>SIGNAL</b> <span>· decision detection signals</span></div></div>
+    <a href="tracker.html" class="nav-link">← Back to tracker</a>
+  </div>
+
+  <h1>What We Listen To</h1>
+  <p class="subtitle">For each of the 16 decision types, here's exactly which API fields Signal monitors, how we detect that a decision was made, and what we store in the decision journal.</p>
+
+  <div class="toc">
+    <h3>16 Decision Types</h3>
+    <div class="toc-grid">
+      <a href="#budget_set" class="toc-item">BUDGET_SET</a>
+      <a href="#budget_reallocate" class="toc-item">BUDGET_REALLOCATE</a>
+      <a href="#bid_strategy_change" class="toc-item">BID_STRATEGY_CHANGE</a>
+      <a href="#bid_adjust" class="toc-item">BID_ADJUST</a>
+      <a href="#pacing_change" class="toc-item">PACING_CHANGE</a>
+      <a href="#audience_target" class="toc-item">AUDIENCE_TARGET</a>
+      <a href="#audience_expand" class="toc-item">AUDIENCE_EXPAND</a>
+      <a href="#audience_suppress" class="toc-item">AUDIENCE_SUPPRESS</a>
+      <a href="#keyword_manage" class="toc-item">KEYWORD_MANAGE</a>
+      <a href="#placement_manage" class="toc-item">PLACEMENT_MANAGE</a>
+      <a href="#geo_target" class="toc-item">GEO_TARGET</a>
+      <a href="#schedule_daypart" class="toc-item">SCHEDULE_DAYPART</a>
+      <a href="#creative_manage" class="toc-item">CREATIVE_MANAGE</a>
+      <a href="#status_change" class="toc-item">STATUS_CHANGE</a>
+      <a href="#frequency_cap" class="toc-item">FREQUENCY_CAP</a>
+      <a href="#signal_config" class="toc-item">SIGNAL_CONFIG</a>
+    </div>
+  </div>
+
+  <!-- BUDGET_SET -->
+  <div class="decision-type" id="budget_set">
+    <div class="dt-header">
+      <span class="atype">BUDGET_SET</span>
+      <span class="desc">Set, raise, or lower budget (daily or lifetime) at campaign/ad-set level</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign_budget.amount_micros</span>
+        <span class="fchip primary">campaign_budget.type (DAILY/LIFETIME)</span>
+        <span class="fchip">adset.daily_budget</span>
+        <span class="fchip">adset.lifetime_budget</span>
+        <span class="fchip">campaign_budget.period</span>
+      </div>
+    </div>
+    <div class="dt-section">
+      <div class="label">Supporting context fields</div>
+      <div class="field-list">
+        <span class="fchip">metrics.cost_micros (pre/post)</span>
+        <span class="fchip">metrics.impressions (pre/post)</span>
+        <span class="fchip">campaign.name</span>
+        <span class="fchip">adset.name</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> If <code>amount_micros</code> at time T differs from T-1 by more than the noise threshold (±5%), classify as BUDGET_SET. Direction (increase/decrease) and magnitude stored. If multiple ad sets change in opposite directions on the same day within the same campaign → reclassify as BUDGET_REALLOCATE instead.
+    </div>
+  </div>
+
+  <!-- BUDGET_REALLOCATE -->
+  <div class="decision-type" id="budget_reallocate">
+    <div class="dt-header">
+      <span class="atype">BUDGET_REALLOCATE</span>
+      <span class="desc">Shift budget between campaigns/ad sets within a platform</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.daily_budget (multiple ad sets)</span>
+        <span class="fchip primary">campaign_budget.amount_micros (multiple campaigns)</span>
+        <span class="fchip">adset.campaign_id</span>
+      </div>
+    </div>
+    <div class="dt-section">
+      <div class="label">Supporting context fields</div>
+      <div class="field-list">
+        <span class="fchip">campaign.name</span>
+        <span class="fchip">adset.name</span>
+        <span class="fchip">metrics.cost_micros</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Two or more budget changes on the same day where the <b>net total</b> is approximately constant (within 10%). One goes up, another goes down → this is a reallocation, not independent budget sets. We store both source and destination entities.
+    </div>
+  </div>
+
+  <!-- BID_STRATEGY_CHANGE -->
+  <div class="decision-type" id="bid_strategy_change">
+    <div class="dt-header">
+      <span class="atype">BID_STRATEGY_CHANGE</span>
+      <span class="desc">Switch strategy (manual ↔ auto; tCPA/tROAS/cost-cap/max-conv)</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign.bidding_strategy_type</span>
+        <span class="fchip primary">campaign.target_cpa.target_cpa_micros</span>
+        <span class="fchip primary">campaign.target_roas.target_roas</span>
+        <span class="fchip">adset.bid_strategy (Meta)</span>
+        <span class="fchip">adset.billing_event</span>
+      </div>
+    </div>
+    <div class="dt-section">
+      <div class="label">Supporting context fields</div>
+      <div class="field-list">
+        <span class="fchip">metrics.average_cpc (before/after)</span>
+        <span class="fchip">metrics.conversions (before/after)</span>
+        <span class="fchip">metrics.cost_per_conversion</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> <code>bidding_strategy_type</code> enum value changes between snapshots. We record from→to strategy, and any associated target value. Context metrics help assess if the switch improved performance.
+    </div>
+  </div>
+
+  <!-- BID_ADJUST -->
+  <div class="decision-type" id="bid_adjust">
+    <div class="dt-header">
+      <span class="atype">BID_ADJUST</span>
+      <span class="desc">Change bid amount, modifiers, or bid factors</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">ad_group.cpc_bid_micros</span>
+        <span class="fchip primary">ad_group_criterion.cpc_bid_micros</span>
+        <span class="fchip primary">campaign.target_cpa.target_cpa_micros</span>
+        <span class="fchip">adset.bid_amount</span>
+        <span class="fchip">campaign_criterion.bid_modifier</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Bid values or bid modifiers change by >5% between snapshots without a strategy-type change. This is a tuning decision within the same strategy — distinct from BID_STRATEGY_CHANGE.
+    </div>
+  </div>
+
+  <!-- PACING_CHANGE -->
+  <div class="decision-type" id="pacing_change">
+    <div class="dt-header">
+      <span class="atype">PACING_CHANGE</span>
+      <span class="desc">Standard ↔ accelerated; toggle auto-allocator</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign_budget.delivery_method</span>
+        <span class="fchip primary">adset.pacing_type</span>
+        <span class="fchip">campaign.campaign_budget_optimization (CBO toggle)</span>
+        <span class="fchip">adset.budget_rebalance_flag</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> <code>delivery_method</code> changes (STANDARD↔ACCELERATED) or CBO/ABO toggle flips. Also detects enabling Advantage Campaign Budget on Meta.
+    </div>
+  </div>
+
+  <!-- AUDIENCE_TARGET -->
+  <div class="decision-type" id="audience_target">
+    <div class="dt-header">
+      <span class="atype">AUDIENCE_TARGET</span>
+      <span class="desc">Add/remove targeting (demo, interest, custom, lookalike, retargeting)</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.targeting.custom_audiences</span>
+        <span class="fchip primary">adset.targeting.lookalike_spec</span>
+        <span class="fchip primary">adset.targeting.interests</span>
+        <span class="fchip">campaign_criterion.user_list</span>
+        <span class="fchip">ad_group.audience_setting</span>
+        <span class="fchip">adset.targeting.age_min/max</span>
+        <span class="fchip">adset.targeting.genders</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Audience arrays/lists differ between snapshots — new IDs appear or existing ones vanish. We diff the audience object and record adds vs removes, plus the audience type (LAL, custom, interest, demographic).
+    </div>
+  </div>
+
+  <!-- AUDIENCE_EXPAND -->
+  <div class="decision-type" id="audience_expand">
+    <div class="dt-header">
+      <span class="atype">AUDIENCE_EXPAND</span>
+      <span class="desc">Broaden reach beyond defined segment</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.targeting.targeting_optimization</span>
+        <span class="fchip primary">adset.targeting.expansion_enabled</span>
+        <span class="fchip">campaign.audience_expansion_opt_in</span>
+        <span class="fchip">adset.targeting.flexible_spec</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Expansion flag toggles on, or <code>flexible_spec</code> broadens (interest targeting opens up). Distinguished from AUDIENCE_TARGET by checking if it's an expansion setting vs a specific audience add.
+    </div>
+  </div>
+
+  <!-- AUDIENCE_SUPPRESS -->
+  <div class="decision-type" id="audience_suppress">
+    <div class="dt-header">
+      <span class="atype">AUDIENCE_SUPPRESS</span>
+      <span class="desc">Exclude a segment from delivery</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.targeting.excluded_custom_audiences</span>
+        <span class="fchip primary">campaign_criterion.negative (user_list)</span>
+        <span class="fchip">adset.targeting.exclusions</span>
+        <span class="fchip">campaign.brand_safety_negative_keywords</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> New entries appear in exclusion lists. Any audience added to the <code>excluded_custom_audiences</code> array or a negative user list criterion added to a campaign.
+    </div>
+  </div>
+
+  <!-- KEYWORD_MANAGE -->
+  <div class="decision-type" id="keyword_manage">
+    <div class="dt-header">
+      <span class="atype">KEYWORD_MANAGE</span>
+      <span class="desc">Add/remove keywords, match types, negatives (search surfaces)</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">ad_group_criterion.keyword.text</span>
+        <span class="fchip primary">ad_group_criterion.keyword.match_type</span>
+        <span class="fchip primary">ad_group_criterion.status</span>
+        <span class="fchip primary">ad_group_criterion.negative</span>
+        <span class="fchip">campaign_criterion.keyword (campaign negatives)</span>
+        <span class="fchip">shared_set.shared_set_id (negative lists)</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> New keyword criteria appear or existing ones change status (ENABLED↔REMOVED↔PAUSED). We count adds vs removes, classify by match type, and flag if they're negative keywords (blocking) vs positive (targeting).
+    </div>
+  </div>
+
+  <!-- PLACEMENT_MANAGE -->
+  <div class="decision-type" id="placement_manage">
+    <div class="dt-header">
+      <span class="atype">PLACEMENT_MANAGE</span>
+      <span class="desc">Inventory/placement targeting, exclusions, deals/PMP</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.targeting.publisher_platforms</span>
+        <span class="fchip primary">adset.targeting.facebook_positions</span>
+        <span class="fchip primary">adset.targeting.instagram_positions</span>
+        <span class="fchip">campaign_criterion.placement</span>
+        <span class="fchip">campaign_criterion.youtube_channel</span>
+        <span class="fchip">campaign.network_settings</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Placement arrays change — platforms added/removed, specific positions toggled. On Google: network settings or placement criterion updates. On Meta: publisher_platforms or position arrays differ.
+    </div>
+  </div>
+
+  <!-- GEO_TARGET -->
+  <div class="decision-type" id="geo_target">
+    <div class="dt-header">
+      <span class="atype">GEO_TARGET</span>
+      <span class="desc">Location, radius, geo bid factors</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign_criterion.location</span>
+        <span class="fchip primary">adset.targeting.geo_locations</span>
+        <span class="fchip">campaign_criterion.proximity</span>
+        <span class="fchip">campaign_criterion.bid_modifier (location)</span>
+        <span class="fchip">adset.targeting.excluded_geo_locations</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Location criteria added/removed, radius targeting changes, or geo-level bid modifiers adjust. We store the specific locations and whether they were adds, removes, or modifier changes.
+    </div>
+  </div>
+
+  <!-- SCHEDULE_DAYPART -->
+  <div class="decision-type" id="schedule_daypart">
+    <div class="dt-header">
+      <span class="atype">SCHEDULE_DAYPART</span>
+      <span class="desc">Flight dates, dayparting</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign.start_date</span>
+        <span class="fchip primary">campaign.end_date</span>
+        <span class="fchip primary">campaign_criterion.ad_schedule</span>
+        <span class="fchip">adset.start_time</span>
+        <span class="fchip">adset.end_time</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Flight dates change, ad schedule criteria appear/modify, or start/end times on Meta ad sets shift. Daypart bid modifiers changing also triggers this.
+    </div>
+  </div>
+
+  <!-- CREATIVE_MANAGE -->
+  <div class="decision-type" id="creative_manage">
+    <div class="dt-header">
+      <span class="atype">CREATIVE_MANAGE</span>
+      <span class="desc">Upload/swap/rotate/enable/pause assets; DCO config</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">ad.creative.id</span>
+        <span class="fchip primary">ad.status</span>
+        <span class="fchip primary">adcreative.object_story_spec</span>
+        <span class="fchip">adcreative.video_id</span>
+        <span class="fchip">adcreative.image_hash</span>
+        <span class="fchip">ad_group_ad.ad.responsive_search_ad</span>
+        <span class="fchip">asset_group.listing_group_filter</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> New creative IDs appear in an ad set, ad status toggles, or creative assets change (new video_id, new image_hash). We track the count of adds/removes/pauses and the creative format (video, image, carousel, RSA).
+    </div>
+  </div>
+
+  <!-- STATUS_CHANGE -->
+  <div class="decision-type" id="status_change">
+    <div class="dt-header">
+      <span class="atype">STATUS_CHANGE</span>
+      <span class="desc">Pause/enable/archive campaign, ad group, or ad</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">campaign.status</span>
+        <span class="fchip primary">ad_group.status</span>
+        <span class="fchip primary">ad_group_ad.status</span>
+        <span class="fchip">adset.effective_status</span>
+        <span class="fchip">adset.configured_status</span>
+        <span class="fchip">ad.status</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Status enum changes (ENABLED↔PAUSED↔REMOVED). We record entity level (campaign/ad group/ad), direction (pause vs enable), and context (spend at time of pause, days since last conversion).
+    </div>
+  </div>
+
+  <!-- FREQUENCY_CAP -->
+  <div class="decision-type" id="frequency_cap">
+    <div class="dt-header">
+      <span class="atype">FREQUENCY_CAP</span>
+      <span class="desc">Set impression frequency cap</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">adset.frequency_control_specs.event</span>
+        <span class="fchip primary">adset.frequency_control_specs.max_frequency</span>
+        <span class="fchip primary">adset.frequency_control_specs.interval_days</span>
+        <span class="fchip">campaign.frequency_caps</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> <code>max_frequency</code> or <code>interval_days</code> values change, or frequency_control_specs appear for the first time. We store before/after values and the event type (IMPRESSIONS usually).
+    </div>
+  </div>
+
+  <!-- SIGNAL_CONFIG -->
+  <div class="decision-type" id="signal_config">
+    <div class="dt-header">
+      <span class="atype">SIGNAL_CONFIG</span>
+      <span class="desc">Which conversion events to optimize toward; feed/CAPI/audience inputs</span>
+    </div>
+    <div class="dt-section">
+      <div class="label">Primary detection fields</div>
+      <div class="field-list">
+        <span class="fchip primary">conversion_action.status</span>
+        <span class="fchip primary">conversion_action.category</span>
+        <span class="fchip primary">campaign.conversion_goals</span>
+        <span class="fchip">adset.promoted_object</span>
+        <span class="fchip">adset.optimization_goal</span>
+        <span class="fchip">pixel.event_config</span>
+        <span class="fchip">actions.action_source (server vs website)</span>
+      </div>
+    </div>
+    <div class="logic">
+      <b>Detection logic:</b> Conversion action linked/unlinked from a campaign, optimization goal changes on Meta ad sets, or CAPI event sources appear. This captures changes to <b>what the platform optimizes toward</b>, not the media settings themselves.
+    </div>
+  </div>
+
+  <!-- STORED FIELDS TABLE -->
+  <div class="stored-fields">
+    <h3>Decision Journal — Stored Fields Per Entry</h3>
+    <p style="color:var(--ink-mid);font-size:13.5px;margin-bottom:16px">Every confirmed decision is stored with these fields, creating the structured history Signal learns from.</p>
+    <table class="sf-table">
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>decision_id</td><td>UUID</td><td>Unique identifier for this decision event</td></tr>
+        <tr><td>detected_at</td><td>timestamp</td><td>When Signal detected the change</td></tr>
+        <tr><td>occurred_at</td><td>date</td><td>When the change actually happened (from field diff)</td></tr>
+        <tr><td>decision_type</td><td>enum</td><td>One of the 16 types (BUDGET_SET, BID_STRATEGY_CHANGE, etc.)</td></tr>
+        <tr><td>platform</td><td>enum</td><td>GOOGLE_ADS | META | DV360 | TIKTOK</td></tr>
+        <tr><td>entity_type</td><td>enum</td><td>CAMPAIGN | AD_GROUP | AD_SET | AD | KEYWORD</td></tr>
+        <tr><td>entity_id</td><td>string</td><td>Platform-specific ID of the changed entity</td></tr>
+        <tr><td>entity_name</td><td>string</td><td>Human-readable name at time of detection</td></tr>
+        <tr><td>field_changes</td><td>JSON[]</td><td>Array of {field, old_value, new_value} for each changed field</td></tr>
+        <tr><td>confidence</td><td>float</td><td>0.0–1.0, how confident we are this was intentional</td></tr>
+        <tr><td>status</td><td>enum</td><td>PENDING | CONFIRMED | REJECTED</td></tr>
+        <tr><td>intent</td><td>text</td><td>Free-text explanation from the user (why they made this change)</td></tr>
+        <tr><td>intent_category</td><td>enum</td><td>AI-classified: GROWTH | EFFICIENCY | TESTING | SEASONAL | REACTIVE | OTHER</td></tr>
+        <tr><td>context_metrics</td><td>JSON</td><td>Performance metrics at time of change (CPA, ROAS, spend, conversions)</td></tr>
+        <tr><td>outcome_metrics</td><td>JSON</td><td>Performance metrics 7 days after change (filled retroactively)</td></tr>
+        <tr><td>user_id</td><td>string</td><td>Who confirmed/rejected (for multi-user accounts)</td></tr>
+        <tr><td>account_id</td><td>string</td><td>Platform account identifier</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:40px;text-align:center;padding:20px;border-top:1px solid var(--line)">
+    <a href="tracker.html" class="nav-link" style="margin-right:12px">← Decision Tracker Demo</a>
+    <a href="index.html" class="nav-link">Day Zero Audit Flow →</a>
+  </div>
+</div>
+</body>
+</html>

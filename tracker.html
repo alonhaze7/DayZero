@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — Decision Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#0B0E13;
+    --panel:#141A22;
+    --panel-2:#1B2430;
+    --line:#29333F;
+    --ink-hi:#ECF1F6;
+    --ink-mid:#9AA7B4;
+    --ink-lo:#5E6B78;
+    --teal:#34D8C4;
+    --teal-dim:#15564F;
+    --signal:#FF8A3D;
+    --signal-dim:#5E3315;
+    --good:#46C97E;
+    --bad:#F2685B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--canvas);
+    color:var(--ink-hi);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  .app{min-height:100%;display:flex;flex-direction:column}
+  .bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:rgba(11,14,19,.85);backdrop-filter:blur(8px);z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:11px}
+  .glyph{
+    width:24px;height:24px;border-radius:6px;position:relative;flex:none;
+    background:linear-gradient(135deg,var(--teal),#1FA796);
+    box-shadow:0 0 0 1px rgba(52,216,196,.3), 0 0 18px rgba(52,216,196,.25);
+  }
+  .glyph::after{content:"";position:absolute;inset:8px;border-radius:2px;background:var(--canvas)}
+  .brand b{font-family:"Space Grotesk";font-weight:700;letter-spacing:.5px;font-size:15px}
+  .brand span{color:var(--ink-lo);font-size:12px;letter-spacing:.3px}
+  .clock{display:flex;align-items:center;gap:9px}
+  .clock .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal)}
+  .clock .t{font-family:"IBM Plex Mono";font-size:13px;color:var(--ink-mid)}
+  .clock .t b{color:var(--ink-hi);font-weight:500}
+
+  .grid{flex:1;display:grid;grid-template-columns:232px 1fr;max-width:1180px;width:100%;margin:0 auto}
+  .spine{padding:34px 0 34px 28px;border-right:1px solid var(--line)}
+  .step{position:relative;padding:0 0 30px 26px}
+  .step:last-child{padding-bottom:0}
+  .step::before{content:"";position:absolute;left:4px;top:18px;bottom:-4px;width:1px;background:var(--line)}
+  .step:last-child::before{display:none}
+  .node{position:absolute;left:0;top:2px;width:9px;height:9px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);transition:.4s}
+  .step.done .node{background:var(--teal);border-color:var(--teal);box-shadow:0 0 10px rgba(52,216,196,.5)}
+  .step.active .node{background:var(--signal);border-color:var(--signal);box-shadow:0 0 12px rgba(255,138,61,.6)}
+  .step.done::before{background:linear-gradient(var(--teal),var(--line))}
+  .step .k{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.5px;color:var(--ink-lo);text-transform:uppercase}
+  .step .lbl{font-family:"Space Grotesk";font-weight:500;font-size:14.5px;color:var(--ink-mid);margin-top:3px;transition:.3s}
+  .step.active .lbl,.step.done .lbl{color:var(--ink-hi)}
+  .step .ts{font-family:"IBM Plex Mono";font-size:11px;color:var(--teal);margin-top:3px;opacity:0;transition:.4s}
+  .step.done .ts,.step.active .ts{opacity:1}
+
+  .stage{padding:40px 44px 80px;min-width:0;overflow-y:auto}
+  .scene{display:none;animation:rise .5s ease both}
+  .scene.on{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  .eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--signal)}
+  h1{font-family:"Space Grotesk";font-weight:700;font-size:30px;line-height:1.12;letter-spacing:-.5px;margin:10px 0 12px;max-width:20ch}
+  .lede{color:var(--ink-mid);font-size:15.5px;max-width:54ch}
+
+  .btn{font-family:"Space Grotesk";font-weight:500;font-size:14.5px;border:0;border-radius:10px;padding:13px 22px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:9px}
+  .btn.primary{background:var(--signal);color:#1a0c02}
+  .btn.primary:hover{filter:brightness(1.08);box-shadow:0 6px 22px rgba(255,138,61,.3)}
+  .btn.primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+  .btn.ghost{background:transparent;color:var(--ink-mid);border:1px solid var(--line)}
+  .btn.ghost:hover{color:var(--ink-hi);border-color:#3a4756}
+  .hint{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-lo)}
+  .actions{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap}
+
+  /* connectors */
+  .ctrack{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:30px 0 26px}
+  .ctitle{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .ctitle .pill{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);letter-spacing:.5px}
+  .pill.now{color:var(--teal);border-color:var(--teal-dim)}
+  .conn{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);cursor:pointer;transition:.18s;user-select:none}
+  .conn:hover{border-color:#3a4756;background:var(--panel-2)}
+  .conn.sel{border-color:var(--teal);background:linear-gradient(var(--panel-2),var(--panel))}
+  .conn .ico{width:34px;height:34px;border-radius:8px;flex:none;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:700;font-size:13px;background:var(--panel-2);border:1px solid var(--line)}
+  .conn.sel .ico{background:var(--teal);color:#04211d;border-color:var(--teal)}
+  .conn .nm{font-size:14px;font-weight:500}
+  .conn .sub{font-size:11.5px;color:var(--ink-lo);font-family:"IBM Plex Mono"}
+  .conn .chk{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);flex:none;display:grid;place-items:center;transition:.18s}
+  .conn.sel .chk{background:var(--teal);border-color:var(--teal)}
+  .conn.sel .chk::after{content:"";width:5px;height:9px;border:2px solid #04211d;border-top:0;border-left:0;transform:rotate(42deg) translateY(-1px)}
+
+  /* backfill */
+  .meters{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:34px 0 24px}
+  .meter{border:1px solid var(--line);border-radius:13px;padding:20px;background:var(--panel)}
+  .meter .v{font-family:"Space Grotesk";font-weight:700;font-size:34px;letter-spacing:-1px}
+  .meter .l{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);margin-top:4px}
+  .progress{height:5px;border-radius:4px;background:var(--panel-2);overflow:hidden;margin-top:30px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-dim),var(--teal));transition:width .25s}
+  .feed{margin-top:24px;display:flex;flex-direction:column;gap:9px}
+  .feed .row{display:flex;align-items:center;gap:11px;font-family:"IBM Plex Mono";font-size:12.5px;color:var(--ink-mid);opacity:0;transform:translateX(-8px);transition:.4s}
+  .feed .row.in{opacity:1;transform:none}
+  .feed .row .tick{color:var(--teal)}
+
+  /* detection cards */
+  .grouphead{display:flex;align-items:center;gap:12px;margin:28px 0 14px}
+  .grouphead.first{margin-top:30px}
+  .pf{display:inline-flex;align-items:center;gap:9px;font-family:"Space Grotesk";font-weight:500;font-size:14.5px;color:var(--ink-hi)}
+  .pf .sq{width:21px;height:21px;border-radius:6px;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:700;font-size:12px;color:#fff;flex:none}
+  .pf.g .sq{background:#4285F4}
+  .pf.m .sq{background:#1877F2}
+  .grouphead .rule{flex:1;height:1px;background:var(--line)}
+  .grouphead .ghnote{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);flex:none}
+
+  .fchip{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--ink-mid);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .fieldrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:11px}
+  .fieldrow .fl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-right:1px}
+
+  .detections{display:flex;flex-direction:column;gap:15px;margin:28px 0 10px}
+  .det{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;transition:.3s}
+  .det .top{padding:20px 20px 16px}
+  .det .atype{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--signal);background:var(--signal-dim);border:1px solid rgba(255,138,61,.25);border-radius:5px;padding:2px 8px;display:inline-block;margin-bottom:8px}
+  .det .date-badge{font-family:"IBM Plex Mono";font-size:10px;color:var(--ink-lo);margin-left:8px}
+  .det h3{font-family:"Space Grotesk";font-weight:500;font-size:17px;line-height:1.25;margin-bottom:8px}
+  .det .saw{font-size:13.5px;color:var(--ink-mid);margin-bottom:10px;padding:10px 14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--teal)}
+  .det .saw .saw-label{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:4px}
+  .det .conf-row{display:flex;align-items:center;gap:9px;margin-top:13px}
+  .det .conf-row .track{width:100px;height:5px;border-radius:4px;background:var(--panel-2);overflow:hidden}
+  .det .conf-row .track i{display:block;height:100%;background:var(--teal)}
+  .det .conf-row .lab{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-mid)}
+  .det .ctl{display:flex;gap:10px;padding:0 20px 20px;align-items:center}
+  .mini{font-family:"Space Grotesk";font-weight:500;font-size:13.5px;border-radius:9px;padding:10px 18px;cursor:pointer;border:0;transition:.18s}
+  .mini.confirm{background:var(--teal);color:#04211d}
+  .mini.confirm:hover{filter:brightness(1.08)}
+  .mini.reject{background:transparent;color:var(--ink-lo);border:1px solid var(--line)}
+  .mini.reject:hover{color:var(--bad);border-color:var(--bad)}
+
+  /* intent area */
+  .intent-area{display:none;padding:16px 20px;border-top:1px solid var(--teal-dim);background:rgba(52,216,196,.04)}
+  .det.confirmed .intent-area{display:block;animation:rise .4s ease both}
+  .intent-area .il{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+  .intent-area textarea{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--ink-hi);font-family:"IBM Plex Sans";font-size:14px;outline:none;resize:vertical;min-height:60px;transition:.15s}
+  .intent-area textarea:focus{border-color:var(--teal)}
+  .intent-area .save-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+  .mini.save{background:var(--signal);color:#1a0c02;font-size:12.5px;padding:8px 16px}
+
+  .det.confirmed{border-color:var(--teal-dim)}
+  .det.confirmed .ctl{display:none}
+  .det.rejected{opacity:.35;border-color:var(--bad)}
+  .det.rejected .ctl{display:none}
+  .det.rejected .intent-area{display:none}
+  .reject-note{display:none;padding:12px 20px;border-top:1px solid rgba(242,104,91,.2);background:rgba(242,104,91,.05);font-size:13px;color:var(--bad);font-family:"IBM Plex Mono"}
+  .det.rejected .reject-note{display:block}
+
+  .det.saved .intent-area textarea{opacity:.6;pointer-events:none}
+  .det.saved .intent-area .save-row .mini.save{display:none}
+  .saved-badge{display:none;font-family:"IBM Plex Mono";font-size:11px;color:var(--teal)}
+  .det.saved .saved-badge{display:inline}
+
+  /* journal table */
+  .journal{margin-top:28px;overflow-x:auto}
+  .journal table{width:100%;border-collapse:collapse;font-size:13px}
+  .journal th{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .journal td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .journal tr:last-child td{border-bottom:0}
+  .journal .status-confirmed{color:var(--teal)}
+  .journal .status-rejected{color:var(--bad)}
+
+  /* summary */
+  .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+  .sum-card{border:1px solid var(--line);border-radius:13px;padding:24px;background:var(--panel);text-align:center}
+  .sum-card .v{font-family:"Space Grotesk";font-weight:700;font-size:38px;letter-spacing:-1px;background:linear-gradient(135deg,var(--teal),var(--signal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .sum-card .l{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);margin-top:4px}
+
+  .spin{width:14px;height:14px;border:2px solid rgba(0,0,0,.25);border-top-color:#04211d;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .foot{padding:16px 24px;border-top:1px solid var(--line);text-align:center;font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);letter-spacing:.5px}
+
+  @media(max-width:760px){
+    .grid{grid-template-columns:1fr}
+    .spine{display:none}
+    .stage{padding:28px 20px 60px}
+    h1{font-size:24px}
+    .ctrack{grid-template-columns:1fr}
+    .meters{grid-template-columns:1fr}
+    .sum-grid{grid-template-columns:1fr}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">
+      <div class="glyph"></div>
+      <div>
+        <b>SIGNAL</b> <span>· decision tracker</span>
+      </div>
+    </div>
+    <div class="clock">
+      <span class="dot"></span>
+      <span class="t">elapsed <b id="clk">T+00:00</b></span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <nav class="spine">
+      <div class="step active" data-step="0"><span class="node"></span><div class="k">01</div><div class="lbl">Connect</div><div class="ts mono">T+00:00</div></div>
+      <div class="step" data-step="1"><span class="node"></span><div class="k">02</div><div class="lbl">Backfill &amp; scan</div><div class="ts mono"></div></div>
+      <div class="step" data-step="2"><span class="node"></span><div class="k">03</div><div class="lbl">Detected decisions</div><div class="ts mono"></div></div>
+      <div class="step" data-step="3"><span class="node"></span><div class="k">04</div><div class="lbl">Decision journal</div><div class="ts mono"></div></div>
+      <div class="step" data-step="4"><span class="node"></span><div class="k">05</div><div class="lbl">Summary</div><div class="ts mono"></div></div>
+    </nav>
+
+    <main class="stage">
+
+      <!-- STAGE 0: CONNECT -->
+      <section class="scene on" id="s0">
+        <div class="eyebrow">Decision tracker · hour zero</div>
+        <h1>Connect your media. We'll find every decision made in the last 30 days.</h1>
+        <p class="lede">Signal scans field-level changes across your accounts to reconstruct the decisions your team already made — then asks you to confirm and explain them.</p>
+
+        <div class="ctrack">
+          <div>
+            <div class="ctitle">Paid media <span class="pill now">30 days · instant</span></div>
+            <div class="conn sel" data-c><span class="ico">G</span><div><div class="nm">Google Ads</div><div class="sub">MCC level</div></div><span class="chk"></span></div>
+            <div style="height:12px"></div>
+            <div class="conn sel" data-c><span class="ico">M</span><div><div class="nm">Meta Ads</div><div class="sub">campaign + creative</div></div><span class="chk"></span></div>
+          </div>
+          <div>
+            <div class="ctitle">What we track <span class="pill now">field-level diffs</span></div>
+            <div style="padding:14px;border:1px solid var(--line);border-radius:11px;background:var(--panel);font-size:13px;color:var(--ink-mid);line-height:1.7">
+              Budget changes, bid strategy switches, audience modifications, keyword adds/removes, creative uploads, pauses, frequency caps, signal config — anything that maps to the <b style="color:var(--ink-hi)">16 decision types</b>.
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="connectBtn">Authenticate &amp; scan for decisions</button>
+          <span class="hint">2 connectors selected</span>
+        </div>
+      </section>
+
+      <!-- STAGE 1: BACKFILL -->
+      <section class="scene" id="s1">
+        <div class="eyebrow">Scanning</div>
+        <h1>Pulling 30 days &amp; detecting changes.</h1>
+        <p class="lede">We diff field snapshots day-over-day to find every decision your team made — budget shifts, bid changes, pauses, creative swaps, and more.</p>
+
+        <div class="meters">
+          <div class="meter"><div class="v mono" id="mDays">0</div><div class="l">days scanned</div></div>
+          <div class="meter"><div class="v mono" id="mChanges">0</div><div class="l">changes detected</div></div>
+          <div class="meter"><div class="v mono" id="mDecisions">0</div><div class="l">decisions classified</div></div>
+        </div>
+        <div class="progress"><i id="bar"></i></div>
+
+        <div class="feed" id="feed">
+          <div class="row"><span class="tick">✓</span> Google Ads · pulling campaign, ad group &amp; keyword snapshots</div>
+          <div class="row"><span class="tick">✓</span> Meta · pulling adset, ad &amp; creative snapshots</div>
+          <div class="row"><span class="tick">✓</span> Diffing field values day-over-day (budget, bids, status, targeting)</div>
+          <div class="row"><span class="tick">✓</span> Classifying changes into decision types</div>
+          <div class="row"><span class="tick">✓</span> 8 decisions detected · ready for review</div>
+        </div>
+      </section>
+
+      <!-- STAGE 2: DETECTED DECISIONS -->
+      <section class="scene" id="s2">
+        <div class="eyebrow">We found 8 decisions in your last 30 days</div>
+        <h1>Confirm what happened. Tell us why.</h1>
+        <p class="lede">Each card shows a change we detected, the fields that triggered it, and our confidence. Confirm to log it, reject if it wasn't intentional, and add your reasoning so Signal learns.</p>
+
+        <div class="detections" id="detections">
+          <div class="grouphead first"><span class="pf g"><span class="sq">G</span> Google Ads</span><span class="rule"></span><span class="ghnote">4 detected</span></div>
+
+          <!-- Detection 1 -->
+          <div class="det" data-det="1">
+            <div class="top">
+              <span class="atype">BUDGET_SET</span><span class="date-badge">Jun 8</span>
+              <h3>Budget doubled on "Summer Sale - Search" campaign</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                Daily budget changed from $200 → $400. Campaign spending ramped immediately the next day. Impression share rose 18% within 48hrs.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">campaign_budget.amount_micros</span><span class="fchip">campaign.status</span><span class="fchip">metrics.search_impression_share</span></div>
+              <div class="conf-row"><span class="track"><i style="width:94%"></i></span><span class="lab">confidence 0.94</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Summer promo launch, wanted to capture more impression share during the sale week..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 2 -->
+          <div class="det" data-det="2">
+            <div class="top">
+              <span class="atype">BID_STRATEGY_CHANGE</span><span class="date-badge">Jun 11</span>
+              <h3>Switched "Brand - Exact" from Manual CPC to Target CPA</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                Bidding strategy type changed from MANUAL_CPC to TARGET_CPA. Target CPA set to $18. Average CPC dropped 22% in the following 5 days while conversion volume remained stable.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">campaign.bidding_strategy_type</span><span class="fchip">campaign.target_cpa.target_cpa_micros</span><span class="fchip">metrics.average_cpc</span></div>
+              <div class="conf-row"><span class="track"><i style="width:91%"></i></span><span class="lab">confidence 0.91</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Testing automated bidding, wanted to reduce manual oversight on brand terms..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 3 -->
+          <div class="det" data-det="3">
+            <div class="top">
+              <span class="atype">KEYWORD_MANAGE</span><span class="date-badge">Jun 14</span>
+              <h3>Added 23 new keywords to "Prospecting - Broad"</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                23 new keyword criteria added (18 broad match, 5 phrase match). Triggered 340 new search terms in the first week. 4 of the new keywords already have conversions.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">ad_group_criterion.keyword.text</span><span class="fchip">ad_group_criterion.keyword.match_type</span><span class="fchip">ad_group_criterion.status</span></div>
+              <div class="conf-row"><span class="track"><i style="width:88%"></i></span><span class="lab">confidence 0.88</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Expanding to new product category terms, competitor research showed opportunity..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 4 -->
+          <div class="det" data-det="4">
+            <div class="top">
+              <span class="atype">STATUS_CHANGE</span><span class="date-badge">Jun 17</span>
+              <h3>Paused "Old Brand - DSA" campaign</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                Campaign status changed from ENABLED to PAUSED. This campaign had been spending $45/day with a CPA 3.2× above account average. No conversions in final 8 days before pause.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">campaign.status</span><span class="fchip">campaign.end_date</span><span class="fchip">metrics.cost_micros</span><span class="fchip">metrics.conversions</span></div>
+              <div class="conf-row"><span class="track"><i style="width:97%"></i></span><span class="lab">confidence 0.97</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. DSA was cannibalizing exact-match brand, decided to consolidate..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <div class="grouphead"><span class="pf m"><span class="sq">f</span> Meta · Facebook &amp; Instagram</span><span class="rule"></span><span class="ghnote">4 detected</span></div>
+
+          <!-- Detection 5 -->
+          <div class="det" data-det="5">
+            <div class="top">
+              <span class="atype">AUDIENCE_TARGET</span><span class="date-badge">Jun 6</span>
+              <h3>New lookalike audience added to "Acquisition - LAL"</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                New custom audience (Lookalike 1% - Purchase 180d) added to ad set targeting. Previous audience was Lookalike 2% - ATC. Delivery restarted learning phase.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">adset.targeting.custom_audiences</span><span class="fchip">adset.targeting.lookalike_spec</span><span class="fchip">adset.effective_status</span></div>
+              <div class="conf-row"><span class="track"><i style="width:86%"></i></span><span class="lab">confidence 0.86</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Testing tighter lookalike based on purchasers instead of add-to-cart..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 6 -->
+          <div class="det" data-det="6">
+            <div class="top">
+              <span class="atype">CREATIVE_MANAGE</span><span class="date-badge">Jun 10</span>
+              <h3>3 new video ads uploaded to "Evergreen - UGC"</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                3 new ad creatives activated (all video format). Previous ads in this ad set had frequency > 3.8. New creatives are outperforming old ones — CTR 2.1% vs 1.4% average.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">ad.creative.id</span><span class="fchip">ad.status</span><span class="fchip">adcreative.object_story_spec</span><span class="fchip">adcreative.video_id</span></div>
+              <div class="conf-row"><span class="track"><i style="width:92%"></i></span><span class="lab">confidence 0.92</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Refreshing fatigued creative, new UGC batch from creator program..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 7 -->
+          <div class="det" data-det="7">
+            <div class="top">
+              <span class="atype">BUDGET_REALLOCATE</span><span class="date-badge">Jun 13</span>
+              <h3>Budget shifted from "Retargeting" to "Prospecting"</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                Retargeting ad set: daily budget $80 → $40. Prospecting ad set: daily budget $120 → $200. Same campaign, same day. Net budget constant — this is a reallocation, not an increase.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">adset.daily_budget</span><span class="fchip">adset.campaign_id</span><span class="fchip">adset.name</span></div>
+              <div class="conf-row"><span class="track"><i style="width:83%"></i></span><span class="lab">confidence 0.83</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Retargeting pool saturated, shifting to fill top of funnel..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+          <!-- Detection 8 -->
+          <div class="det" data-det="8">
+            <div class="top">
+              <span class="atype">FREQUENCY_CAP</span><span class="date-badge">Jun 16</span>
+              <h3>Frequency cap tightened on "Awareness - Video"</h3>
+              <div class="saw">
+                <div class="saw-label">What we saw</div>
+                Frequency cap changed from 5 impressions/week to 2 impressions/week. Reach increased 40% while spend stayed flat — more unique users seeing ads fewer times.
+              </div>
+              <div class="fieldrow"><span class="fl">fields</span><span class="fchip">adset.frequency_control_specs.event</span><span class="fchip">adset.frequency_control_specs.max_frequency</span><span class="fchip">adset.frequency_control_specs.interval_days</span></div>
+              <div class="conf-row"><span class="track"><i style="width:90%"></i></span><span class="lab">confidence 0.90</span></div>
+            </div>
+            <div class="ctl">
+              <button class="mini confirm" data-confirm>Confirm — that's mine</button>
+              <button class="mini reject" data-reject>Not my change</button>
+            </div>
+            <div class="intent-area">
+              <div class="il">Why did you make this change?</div>
+              <textarea placeholder="e.g. Awareness campaign was over-serving, wanted broader reach at same budget..."></textarea>
+              <div class="save-row"><button class="mini save" data-save>Save intent</button><span class="saved-badge">✓ saved</span></div>
+            </div>
+            <div class="reject-note">Marked as not intentional — Signal will flag for review</div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="toJournal" disabled>View decision journal →</button>
+          <span class="hint" id="detHint">0 of 8 reviewed</span>
+        </div>
+      </section>
+
+      <!-- STAGE 3: DECISION JOURNAL -->
+      <section class="scene" id="s3">
+        <div class="eyebrow">Your decision journal</div>
+        <h1>Every decision, structured and stored.</h1>
+        <p class="lede">This is the history Signal learns from. Each row trains the system to predict, time, and recommend your next moves.</p>
+
+        <div class="journal">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Platform</th><th>What changed</th><th>Intent</th><th>Status</th></tr>
+            </thead>
+            <tbody id="journalBody">
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:24px;padding:16px;border:1px solid var(--teal-dim);border-radius:12px;background:rgba(52,216,196,.05)">
+          <p style="font-size:13.5px;color:var(--ink-hi)"><b style="color:var(--teal)">What this unlocks:</b> With enough confirmed decisions + intent, Signal can predict when you'll want to make similar changes and suggest them proactively — with the confidence scores calibrated to <i>your</i> patterns, not generic rules.</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="toSummary">View summary →</button>
+        </div>
+      </section>
+
+      <!-- STAGE 4: SUMMARY -->
+      <section class="scene" id="s4">
+        <div class="eyebrow">Decision tracking active</div>
+        <h1>Your decision history is now live.</h1>
+        <p class="lede">Signal will continuously monitor field changes and ask you to confirm and explain them — building the journal that powers smarter recommendations.</p>
+
+        <div class="sum-grid">
+          <div class="sum-card"><div class="v" id="sumConfirmed">0</div><div class="l">Confirmed</div></div>
+          <div class="sum-card"><div class="v" id="sumRejected">0</div><div class="l">Rejected</div></div>
+          <div class="sum-card"><div class="v" id="sumIntents">0</div><div class="l">Intents captured</div></div>
+        </div>
+
+        <div style="margin-top:28px;padding:20px;border:1px solid var(--line);border-radius:13px;background:var(--panel)">
+          <div style="font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:14px">What happens next</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:var(--ink-mid)">
+            <div style="display:flex;gap:10px;align-items:center"><span style="color:var(--teal)">✓</span> Daily: auto-detect new decisions from field diffs</div>
+            <div style="display:flex;gap:10px;align-items:center"><span style="color:var(--teal)">→</span> Weekly: prompt you to confirm &amp; add intent to new detections</div>
+            <div style="display:flex;gap:10px;align-items:center"><span style="color:var(--teal)">→</span> Day 14+: Signal starts predicting decisions before you make them</div>
+            <div style="display:flex;gap:10px;align-items:center"><span style="color:var(--teal)">→</span> Day 30+: Proactive recommendations calibrated to your decision patterns</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:16px;border:1px dashed var(--line);border-radius:12px;text-align:center">
+          <p style="color:var(--ink-lo);font-size:13px;margin-bottom:12px">See also:</p>
+          <a href="index.html" class="btn ghost" style="text-decoration:none">Day Zero Audit Flow →</a>
+          <a href="decision-signals.html" class="btn ghost" style="text-decoration:none;margin-left:10px">Detection signals doc →</a>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="foot">DECISION TRACKER · building your decision journal from day one</div>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var clk = document.getElementById('clk');
+  var confirmed=0, rejected=0, intents=0, reviewed=0;
+
+  function setClock(s){
+    var m=Math.floor(s/60),sec=s%60;
+    clk.textContent='T+'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+  }
+
+  function show(id){
+    document.querySelectorAll('.scene').forEach(function(s){s.classList.remove('on')});
+    document.getElementById(id).classList.add('on');
+  }
+  function spine(active){
+    document.querySelectorAll('.step').forEach(function(st){
+      var i=+st.dataset.step;
+      st.classList.toggle('active',i===active);
+      st.classList.toggle('done',i<active);
+    });
+  }
+
+  // connectors
+  document.querySelectorAll('[data-c]').forEach(function(c){
+    c.addEventListener('click',function(){c.classList.toggle('sel')});
+  });
+
+  // CONNECT -> BACKFILL
+  document.getElementById('connectBtn').addEventListener('click',function(){
+    spine(1);show('s1');runBackfill();
+  });
+
+  function runBackfill(){
+    var days=document.getElementById('mDays'),changes=document.getElementById('mChanges'),
+        decisions=document.getElementById('mDecisions'),bar=document.getElementById('bar');
+    var rowsEl=document.querySelectorAll('#feed .row');
+    var dur=reduce?1:3000,t0=performance.now();
+    function frame(now){
+      var p=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-p,3);
+      days.textContent=Math.round(ease*30);
+      changes.textContent=Math.round(ease*47);
+      decisions.textContent=Math.round(ease*8);
+      bar.style.width=(ease*100)+'%';
+      var n=Math.floor(ease*rowsEl.length+0.0001);
+      for(var i=0;i<rowsEl.length;i++) rowsEl[i].classList.toggle('in',i<n||p===1);
+      setClock(Math.round(ease*15));
+      if(p<1) requestAnimationFrame(frame);
+      else setTimeout(function(){spine(2);show('s2');setClock(18);},600);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // DETECTION: confirm/reject
+  function updateHint(){
+    document.getElementById('detHint').textContent=reviewed+' of 8 reviewed';
+    if(reviewed>=8) document.getElementById('toJournal').disabled=false;
+  }
+
+  document.querySelectorAll('[data-confirm]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var det=btn.closest('.det');
+      det.classList.add('confirmed');
+      confirmed++;reviewed++;
+      updateHint();
+    });
+  });
+
+  document.querySelectorAll('[data-reject]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var det=btn.closest('.det');
+      det.classList.add('rejected');
+      rejected++;reviewed++;
+      updateHint();
+    });
+  });
+
+  document.querySelectorAll('[data-save]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var det=btn.closest('.det');
+      det.classList.add('saved');
+      intents++;
+    });
+  });
+
+  // JOURNAL
+  var journalData=[
+    {date:'Jun 8',type:'BUDGET_SET',platform:'Google',change:'Daily budget $200→$400 on Summer Sale',status:'confirmed'},
+    {date:'Jun 11',type:'BID_STRATEGY_CHANGE',platform:'Google',change:'Manual CPC → Target CPA ($18) on Brand',status:'confirmed'},
+    {date:'Jun 14',type:'KEYWORD_MANAGE',platform:'Google',change:'23 new keywords added to Prospecting',status:'confirmed'},
+    {date:'Jun 17',type:'STATUS_CHANGE',platform:'Google',change:'Paused Old Brand - DSA campaign',status:'confirmed'},
+    {date:'Jun 6',type:'AUDIENCE_TARGET',platform:'Meta',change:'New LAL 1% Purchase added to Acquisition',status:'confirmed'},
+    {date:'Jun 10',type:'CREATIVE_MANAGE',platform:'Meta',change:'3 new video ads in Evergreen - UGC',status:'confirmed'},
+    {date:'Jun 13',type:'BUDGET_REALLOCATE',platform:'Meta',change:'Retargeting $80→$40, Prospecting $120→$200',status:'confirmed'},
+    {date:'Jun 16',type:'FREQUENCY_CAP',platform:'Meta',change:'Cap tightened 5/wk→2/wk on Awareness',status:'confirmed'}
+  ];
+
+  document.getElementById('toJournal').addEventListener('click',function(){
+    spine(3);show('s3');setClock(62);
+    var tbody=document.getElementById('journalBody');
+    tbody.innerHTML='';
+    var dets=document.querySelectorAll('.det');
+    dets.forEach(function(det,i){
+      var d=journalData[i];
+      var status=det.classList.contains('confirmed')?'confirmed':'rejected';
+      var intent=det.classList.contains('saved')?det.querySelector('textarea').value||'(not provided)':'—';
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td class="mono" style="font-size:12px;color:var(--ink-lo)">'+d.date+'</td>'+
+        '<td><span style="font-family:IBM Plex Mono;font-size:10px;letter-spacing:1px;color:var(--signal)">'+d.type+'</span></td>'+
+        '<td>'+d.platform+'</td>'+
+        '<td style="color:var(--ink-mid)">'+d.change+'</td>'+
+        '<td style="color:var(--ink-mid);max-width:200px;font-size:13px">'+intent+'</td>'+
+        '<td class="status-'+status+'">'+status+'</td>';
+      tbody.appendChild(tr);
+    });
+  });
+
+  // SUMMARY
+  document.getElementById('toSummary').addEventListener('click',function(){
+    spine(4);show('s4');setClock(100);
+    document.getElementById('sumConfirmed').textContent=confirmed;
+    document.getElementById('sumRejected').textContent=rejected;
+    document.getElementById('sumIntents').textContent=intents;
+  });
+})();
+</script>
+</body>
+</html>
