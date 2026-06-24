@@ -20,1028 +20,570 @@
     --teal-dim:#15564F;
     --signal:#FF8A3D;
     --signal-dim:#5E3315;
+    --bad:#F2685B;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--canvas);
-    color:var(--ink-hi);
-    font-family:"IBM Plex Sans",system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    line-height:1.6;
-    padding:40px 24px 80px;
-  }
-  .wrap{max-width:900px;margin:0 auto}
-  .bar{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:40px;
-  }
+  body{background:var(--canvas);color:var(--ink-hi);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
+  .mono{font-family:"IBM Plex Mono",monospace}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px 80px}
+
+  /* top bar */
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(11,14,19,.92);backdrop-filter:blur(8px);z-index:20}
   .brand{display:flex;align-items:center;gap:11px}
   .glyph{width:24px;height:24px;border-radius:6px;position:relative;flex:none;background:linear-gradient(135deg,var(--teal),#1FA796);box-shadow:0 0 0 1px rgba(52,216,196,.3),0 0 18px rgba(52,216,196,.25)}
   .glyph::after{content:"";position:absolute;inset:8px;border-radius:2px;background:var(--canvas)}
   .brand b{font-family:"Space Grotesk";font-weight:700;letter-spacing:.5px;font-size:15px}
   .brand span{color:var(--ink-lo);font-size:12px}
-  .nav-link{color:var(--teal);text-decoration:none;font-family:"IBM Plex Mono";font-size:12px;border:1px solid var(--teal-dim);padding:6px 14px;border-radius:8px}
+  .nav-links{display:flex;gap:8px}
+  .nav-link{color:var(--teal);text-decoration:none;font-family:"IBM Plex Mono";font-size:11px;border:1px solid var(--teal-dim);padding:5px 12px;border-radius:7px;transition:.15s}
   .nav-link:hover{background:rgba(52,216,196,.1)}
 
-  h1{font-family:"Space Grotesk";font-weight:700;font-size:36px;line-height:1.15;letter-spacing:-.5px;margin-bottom:12px}
-  .subtitle{color:var(--ink-mid);font-size:16px;margin-bottom:40px;max-width:60ch}
+  /* TABS */
+  .tabs{display:flex;gap:4px;padding:20px 24px 0;overflow-x:auto;position:sticky;top:53px;background:var(--canvas);z-index:15;border-bottom:1px solid var(--line);padding-bottom:0}
+  .tab{font-family:"Space Grotesk";font-weight:500;font-size:13.5px;padding:12px 18px;border:none;background:transparent;color:var(--ink-lo);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap}
+  .tab:hover{color:var(--ink-mid)}
+  .tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+  .tab-panel{display:none;padding-top:32px}
+  .tab-panel.active{display:block}
 
-  h2{font-family:"Space Grotesk";font-weight:700;font-size:22px;margin:48px 0 8px;padding-top:24px;border-top:1px solid var(--line)}
-  h2:first-of-type{border-top:0;margin-top:0}
-  h3{font-family:"Space Grotesk";font-weight:500;font-size:16px;margin:28px 0 12px;color:var(--ink-hi)}
+  /* content */
+  h1{font-family:"Space Grotesk";font-weight:700;font-size:32px;line-height:1.15;letter-spacing:-.5px;margin-bottom:8px;padding-top:8px}
+  .subtitle{color:var(--ink-mid);font-size:15px;margin-bottom:32px;max-width:60ch}
+  h2{font-family:"Space Grotesk";font-weight:700;font-size:20px;margin:36px 0 8px;padding-top:20px;border-top:1px solid var(--line);color:var(--ink-hi)}
+  h2:first-child{border-top:0;margin-top:0;padding-top:0}
+  h3{font-family:"Space Grotesk";font-weight:500;font-size:15px;margin:24px 0 10px;color:var(--ink-hi)}
 
-  .decision-type{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:24px;margin-bottom:16px}
-  .dt-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-  .atype{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--signal);background:var(--signal-dim);border:1px solid rgba(255,138,61,.25);border-radius:5px;padding:3px 10px;font-weight:500}
-  .dt-header .desc{font-size:14px;color:var(--ink-mid)}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px}
+  th{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 10px;border-bottom:1px solid rgba(41,51,63,.5);vertical-align:top;color:var(--ink-mid)}
+  tr:last-child td{border-bottom:0}
 
-  .dt-section{margin-top:16px}
-  .dt-section .label{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:8px}
-  .field-list{display:flex;flex-wrap:wrap;gap:6px}
-  .fchip{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-mid);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  /* decision type cards */
+  .decision-type{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:20px;margin-bottom:14px}
+  .dt-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+  .atype{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--signal);background:var(--signal-dim);border:1px solid rgba(255,138,61,.25);border-radius:5px;padding:2px 9px;font-weight:500}
+  .dt-header .desc{font-size:13.5px;color:var(--ink-mid)}
+  .dt-section{margin-top:12px}
+  .dt-section .label{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-lo);margin-bottom:6px}
+  .field-list{display:flex;flex-wrap:wrap;gap:5px}
+  .fchip{font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-mid);background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;white-space:nowrap}
   .fchip.primary{border-color:var(--teal-dim);color:var(--teal)}
-
-  .logic{margin-top:14px;padding:14px;background:var(--panel-2);border-radius:9px;border-left:3px solid var(--teal);font-size:13.5px;color:var(--ink-mid);line-height:1.6}
+  .logic{margin-top:12px;padding:12px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--teal);font-size:13px;color:var(--ink-mid);line-height:1.6}
   .logic b{color:var(--ink-hi);font-weight:500}
-  .logic code{font-family:"IBM Plex Mono";font-size:12px;color:var(--teal);background:rgba(52,216,196,.1);padding:1px 5px;border-radius:3px}
+  .logic code{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--teal);background:rgba(52,216,196,.1);padding:1px 4px;border-radius:3px}
 
-  .platform-badge{font-family:"IBM Plex Mono";font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--ink-lo);margin-left:auto}
-
-  .toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:32px}
-  .toc h3{margin:0 0 12px;font-size:14px;color:var(--ink-lo);font-family:"IBM Plex Mono";letter-spacing:1px;text-transform:uppercase}
-  .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
-  .toc-item{font-family:"IBM Plex Mono";font-size:12px;color:var(--signal);padding:6px 10px;background:var(--panel-2);border-radius:6px;text-decoration:none;transition:.15s}
+  /* TOC grid */
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:24px}
+  .toc h3{margin:0 0 10px;font-size:13px;color:var(--ink-lo);font-family:"IBM Plex Mono";letter-spacing:1px;text-transform:uppercase}
+  .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+  .toc-item{font-family:"IBM Plex Mono";font-size:11px;color:var(--signal);padding:5px 9px;background:var(--panel-2);border-radius:5px;text-decoration:none;transition:.15s}
   .toc-item:hover{background:var(--signal-dim)}
 
-  .stored-fields{margin-top:40px;border:1px solid var(--teal-dim);border-radius:14px;background:rgba(52,216,196,.04);padding:24px}
-  .stored-fields h3{color:var(--teal);margin:0 0 16px}
-  .sf-table{width:100%;border-collapse:collapse;font-size:13px}
-  .sf-table th{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-lo);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
-  .sf-table td{padding:10px;border-bottom:1px solid rgba(41,51,63,.5);vertical-align:top;color:var(--ink-mid)}
-  .sf-table td:first-child{font-family:"IBM Plex Mono";font-size:12px;color:var(--ink-hi)}
+  /* stored fields */
+  .stored-fields{margin-top:28px;border:1px solid var(--teal-dim);border-radius:12px;background:rgba(52,216,196,.04);padding:20px}
+  .stored-fields h3{color:var(--teal);margin:0 0 12px}
+
+  /* timeline */
+  .tl-step{display:grid;grid-template-columns:70px 1fr;gap:0;margin-bottom:0}
+  .tl-line{display:flex;flex-direction:column;align-items:center}
+  .tl-dot{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:"Space Grotesk";font-weight:700;font-size:12px;flex:none}
+  .tl-bar{width:2px;flex:1;background:var(--line)}
+  .tl-content{padding-bottom:28px}
+  .tl-content h3{margin-top:0}
+  .tl-box{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px;margin:10px 0}
+  .tl-item{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-mid);margin-bottom:8px}
+  .tl-item:last-child{margin-bottom:0}
+  .tl-n{color:var(--teal);font-weight:700;min-width:16px;font-family:"IBM Plex Mono";font-size:12px}
+  .tl-tag{font-family:"IBM Plex Mono";font-size:10.5px;margin-bottom:10px}
+
+  .foot{padding:16px 24px;border-top:1px solid var(--line);text-align:center;font-family:"IBM Plex Mono";font-size:11px;color:var(--ink-lo);letter-spacing:.5px}
 
   @media(max-width:680px){
-    h1{font-size:26px}
-    .toc-grid{grid-template-columns:1fr}
+    h1{font-size:24px}
+    .toc-grid{grid-template-columns:1fr 1fr}
+    .tabs{gap:0}
+    .tab{padding:10px 12px;font-size:12px}
+    .tl-step{grid-template-columns:50px 1fr}
   }
 </style>
 </head>
 <body>
+
+<div class="bar">
+  <div class="brand"><div class="glyph"></div><div><b>SIGNAL</b> <span>· decision intelligence</span></div></div>
+  <div class="nav-links">
+    <a href="tracker.html" class="nav-link">Tracker</a>
+    <a href="index.html" class="nav-link">Day Zero</a>
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="signals">Detection Signals</button>
+  <button class="tab" data-tab="confidence">Confidence</button>
+  <button class="tab" data-tab="importance">Importance</button>
+  <button class="tab" data-tab="reports">Change Reports</button>
+  <button class="tab" data-tab="timeline">Value Timeline</button>
+</div>
+
 <div class="wrap">
-  <div class="bar">
-    <div class="brand"><div class="glyph"></div><div><b>SIGNAL</b> <span>· decision detection signals</span></div></div>
-    <a href="tracker.html" class="nav-link">← Back to tracker</a>
-  </div>
 
-  <h1>What We Listen To</h1>
-  <p class="subtitle">For each of the 16 decision types, here's exactly which API fields Signal monitors, how we detect that a decision was made, and what we store in the decision journal.</p>
+  <!-- ═══════════════ TAB 1: DETECTION SIGNALS ═══════════════ -->
+  <div class="tab-panel active" id="panel-signals">
+    <h1>What We Listen To</h1>
+    <p class="subtitle">For each of the 16 decision types — which API fields Signal monitors, how we detect a decision was made, and what we store.</p>
 
-  <div class="toc">
-    <h3>16 Decision Types</h3>
-    <div class="toc-grid">
-      <a href="#budget_set" class="toc-item">BUDGET_SET</a>
-      <a href="#budget_reallocate" class="toc-item">BUDGET_REALLOCATE</a>
-      <a href="#bid_strategy_change" class="toc-item">BID_STRATEGY_CHANGE</a>
-      <a href="#bid_adjust" class="toc-item">BID_ADJUST</a>
-      <a href="#pacing_change" class="toc-item">PACING_CHANGE</a>
-      <a href="#audience_target" class="toc-item">AUDIENCE_TARGET</a>
-      <a href="#audience_expand" class="toc-item">AUDIENCE_EXPAND</a>
-      <a href="#audience_suppress" class="toc-item">AUDIENCE_SUPPRESS</a>
-      <a href="#keyword_manage" class="toc-item">KEYWORD_MANAGE</a>
-      <a href="#placement_manage" class="toc-item">PLACEMENT_MANAGE</a>
-      <a href="#geo_target" class="toc-item">GEO_TARGET</a>
-      <a href="#schedule_daypart" class="toc-item">SCHEDULE_DAYPART</a>
-      <a href="#creative_manage" class="toc-item">CREATIVE_MANAGE</a>
-      <a href="#status_change" class="toc-item">STATUS_CHANGE</a>
-      <a href="#frequency_cap" class="toc-item">FREQUENCY_CAP</a>
-      <a href="#signal_config" class="toc-item">SIGNAL_CONFIG</a>
+    <div class="toc">
+      <h3>16 Decision Types</h3>
+      <div class="toc-grid">
+        <a href="#budget_set" class="toc-item">BUDGET_SET</a>
+        <a href="#budget_reallocate" class="toc-item">BUDGET_REALLOCATE</a>
+        <a href="#bid_strategy_change" class="toc-item">BID_STRATEGY_CHANGE</a>
+        <a href="#bid_adjust" class="toc-item">BID_ADJUST</a>
+        <a href="#pacing_change" class="toc-item">PACING_CHANGE</a>
+        <a href="#audience_target" class="toc-item">AUDIENCE_TARGET</a>
+        <a href="#audience_expand" class="toc-item">AUDIENCE_EXPAND</a>
+        <a href="#audience_suppress" class="toc-item">AUDIENCE_SUPPRESS</a>
+        <a href="#keyword_manage" class="toc-item">KEYWORD_MANAGE</a>
+        <a href="#placement_manage" class="toc-item">PLACEMENT_MANAGE</a>
+        <a href="#geo_target" class="toc-item">GEO_TARGET</a>
+        <a href="#schedule_daypart" class="toc-item">SCHEDULE_DAYPART</a>
+        <a href="#creative_manage" class="toc-item">CREATIVE_MANAGE</a>
+        <a href="#status_change" class="toc-item">STATUS_CHANGE</a>
+        <a href="#frequency_cap" class="toc-item">FREQUENCY_CAP</a>
+        <a href="#signal_config" class="toc-item">SIGNAL_CONFIG</a>
+      </div>
     </div>
-  </div>
 
-  <!-- BUDGET_SET -->
-  <div class="decision-type" id="budget_set">
-    <div class="dt-header">
-      <span class="atype">BUDGET_SET</span>
-      <span class="desc">Set, raise, or lower budget (daily or lifetime) at campaign/ad-set level</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign_budget.amount_micros</span>
-        <span class="fchip primary">campaign_budget.type (DAILY/LIFETIME)</span>
-        <span class="fchip">adset.daily_budget</span>
-        <span class="fchip">adset.lifetime_budget</span>
-        <span class="fchip">campaign_budget.period</span>
-      </div>
-    </div>
-    <div class="dt-section">
-      <div class="label">Supporting context fields</div>
-      <div class="field-list">
-        <span class="fchip">metrics.cost_micros (pre/post)</span>
-        <span class="fchip">metrics.impressions (pre/post)</span>
-        <span class="fchip">campaign.name</span>
-        <span class="fchip">adset.name</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> If <code>amount_micros</code> at time T differs from T-1 by more than the noise threshold (±5%), classify as BUDGET_SET. Direction (increase/decrease) and magnitude stored. If multiple ad sets change in opposite directions on the same day within the same campaign → reclassify as BUDGET_REALLOCATE instead.
-    </div>
-  </div>
+    <div class="decision-type" id="budget_set"><div class="dt-header"><span class="atype">BUDGET_SET</span><span class="desc">Set, raise, or lower budget (daily or lifetime) at campaign/ad-set level</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign_budget.amount_micros</span><span class="fchip primary">campaign_budget.type (DAILY/LIFETIME)</span><span class="fchip">adset.daily_budget</span><span class="fchip">adset.lifetime_budget</span></div></div><div class="dt-section"><div class="label">Supporting context</div><div class="field-list"><span class="fchip">metrics.cost_micros</span><span class="fchip">metrics.impressions</span><span class="fchip">campaign.name</span></div></div><div class="logic"><b>Detection:</b> If <code>amount_micros</code> at T differs from T-1 by &gt;±5%, classify as BUDGET_SET. If multiple ad sets change in opposite directions same day → reclassify as BUDGET_REALLOCATE.</div></div>
 
-  <!-- BUDGET_REALLOCATE -->
-  <div class="decision-type" id="budget_reallocate">
-    <div class="dt-header">
-      <span class="atype">BUDGET_REALLOCATE</span>
-      <span class="desc">Shift budget between campaigns/ad sets within a platform</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.daily_budget (multiple ad sets)</span>
-        <span class="fchip primary">campaign_budget.amount_micros (multiple campaigns)</span>
-        <span class="fchip">adset.campaign_id</span>
-      </div>
-    </div>
-    <div class="dt-section">
-      <div class="label">Supporting context fields</div>
-      <div class="field-list">
-        <span class="fchip">campaign.name</span>
-        <span class="fchip">adset.name</span>
-        <span class="fchip">metrics.cost_micros</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Two or more budget changes on the same day where the <b>net total</b> is approximately constant (within 10%). One goes up, another goes down → this is a reallocation, not independent budget sets. We store both source and destination entities.
-    </div>
-  </div>
+    <div class="decision-type" id="budget_reallocate"><div class="dt-header"><span class="atype">BUDGET_REALLOCATE</span><span class="desc">Shift budget between campaigns/ad sets within a platform</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.daily_budget (multiple)</span><span class="fchip primary">campaign_budget.amount_micros (multiple)</span><span class="fchip">adset.campaign_id</span></div></div><div class="logic"><b>Detection:</b> Two+ budget changes same day where net total ≈ constant (within 10%). One up, one down = reallocation. Store source + destination entities.</div></div>
 
-  <!-- BID_STRATEGY_CHANGE -->
-  <div class="decision-type" id="bid_strategy_change">
-    <div class="dt-header">
-      <span class="atype">BID_STRATEGY_CHANGE</span>
-      <span class="desc">Switch strategy (manual ↔ auto; tCPA/tROAS/cost-cap/max-conv)</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign.bidding_strategy_type</span>
-        <span class="fchip primary">campaign.target_cpa.target_cpa_micros</span>
-        <span class="fchip primary">campaign.target_roas.target_roas</span>
-        <span class="fchip">adset.bid_strategy (Meta)</span>
-        <span class="fchip">adset.billing_event</span>
-      </div>
-    </div>
-    <div class="dt-section">
-      <div class="label">Supporting context fields</div>
-      <div class="field-list">
-        <span class="fchip">metrics.average_cpc (before/after)</span>
-        <span class="fchip">metrics.conversions (before/after)</span>
-        <span class="fchip">metrics.cost_per_conversion</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> <code>bidding_strategy_type</code> enum value changes between snapshots. We record from→to strategy, and any associated target value. Context metrics help assess if the switch improved performance.
+    <div class="decision-type" id="bid_strategy_change"><div class="dt-header"><span class="atype">BID_STRATEGY_CHANGE</span><span class="desc">Switch strategy (manual ↔ auto; tCPA/tROAS/cost-cap/max-conv)</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign.bidding_strategy_type</span><span class="fchip primary">campaign.target_cpa.target_cpa_micros</span><span class="fchip primary">campaign.target_roas.target_roas</span><span class="fchip">adset.bid_strategy (Meta)</span></div></div><div class="logic"><b>Detection:</b> <code>bidding_strategy_type</code> enum changes between snapshots. Record from→to strategy + associated target value.</div></div>
+
+    <div class="decision-type" id="bid_adjust"><div class="dt-header"><span class="atype">BID_ADJUST</span><span class="desc">Change bid amount, modifiers, or bid factors</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">ad_group.cpc_bid_micros</span><span class="fchip primary">ad_group_criterion.cpc_bid_micros</span><span class="fchip">adset.bid_amount</span><span class="fchip">campaign_criterion.bid_modifier</span></div></div><div class="logic"><b>Detection:</b> Bid values change by &gt;5% without a strategy-type change. Tuning within same strategy — distinct from BID_STRATEGY_CHANGE.</div></div>
+
+    <div class="decision-type" id="pacing_change"><div class="dt-header"><span class="atype">PACING_CHANGE</span><span class="desc">Standard ↔ accelerated; toggle auto-allocator</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign_budget.delivery_method</span><span class="fchip primary">adset.pacing_type</span><span class="fchip">campaign.campaign_budget_optimization</span></div></div><div class="logic"><b>Detection:</b> <code>delivery_method</code> changes (STANDARD↔ACCELERATED) or CBO/ABO toggle flips. Also detects Advantage Campaign Budget on Meta.</div></div>
+
+    <div class="decision-type" id="audience_target"><div class="dt-header"><span class="atype">AUDIENCE_TARGET</span><span class="desc">Add/remove targeting (demo, interest, custom, lookalike, retargeting)</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.targeting.custom_audiences</span><span class="fchip primary">adset.targeting.lookalike_spec</span><span class="fchip primary">adset.targeting.interests</span><span class="fchip">campaign_criterion.user_list</span><span class="fchip">adset.targeting.age_min/max</span></div></div><div class="logic"><b>Detection:</b> Audience arrays differ between snapshots — new IDs appear or existing vanish. Diff the audience object; record adds vs removes + type (LAL, custom, interest).</div></div>
+
+    <div class="decision-type" id="audience_expand"><div class="dt-header"><span class="atype">AUDIENCE_EXPAND</span><span class="desc">Broaden reach beyond defined segment</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.targeting.targeting_optimization</span><span class="fchip primary">adset.targeting.expansion_enabled</span><span class="fchip">campaign.audience_expansion_opt_in</span></div></div><div class="logic"><b>Detection:</b> Expansion flag toggles on, or <code>flexible_spec</code> broadens. Distinguished from AUDIENCE_TARGET by checking expansion setting vs specific audience add.</div></div>
+
+    <div class="decision-type" id="audience_suppress"><div class="dt-header"><span class="atype">AUDIENCE_SUPPRESS</span><span class="desc">Exclude a segment from delivery</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.targeting.excluded_custom_audiences</span><span class="fchip primary">campaign_criterion.negative (user_list)</span><span class="fchip">adset.targeting.exclusions</span></div></div><div class="logic"><b>Detection:</b> New entries in exclusion lists. Any audience added to <code>excluded_custom_audiences</code> or negative user list criterion added.</div></div>
+
+    <div class="decision-type" id="keyword_manage"><div class="dt-header"><span class="atype">KEYWORD_MANAGE</span><span class="desc">Add/remove keywords, match types, negatives</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">ad_group_criterion.keyword.text</span><span class="fchip primary">ad_group_criterion.keyword.match_type</span><span class="fchip primary">ad_group_criterion.status</span><span class="fchip">campaign_criterion.keyword (negatives)</span></div></div><div class="logic"><b>Detection:</b> New keyword criteria appear or status changes (ENABLED↔REMOVED↔PAUSED). Count adds vs removes; classify match type; flag negatives vs positives.</div></div>
+
+    <div class="decision-type" id="placement_manage"><div class="dt-header"><span class="atype">PLACEMENT_MANAGE</span><span class="desc">Inventory/placement targeting, exclusions, deals/PMP</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.targeting.publisher_platforms</span><span class="fchip primary">adset.targeting.facebook_positions</span><span class="fchip">campaign_criterion.placement</span><span class="fchip">campaign.network_settings</span></div></div><div class="logic"><b>Detection:</b> Placement arrays change — platforms added/removed, positions toggled. Google: network settings or placement criterion. Meta: publisher_platforms or position arrays.</div></div>
+
+    <div class="decision-type" id="geo_target"><div class="dt-header"><span class="atype">GEO_TARGET</span><span class="desc">Location, radius, geo bid factors</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign_criterion.location</span><span class="fchip primary">adset.targeting.geo_locations</span><span class="fchip">campaign_criterion.proximity</span><span class="fchip">campaign_criterion.bid_modifier (location)</span></div></div><div class="logic"><b>Detection:</b> Location criteria added/removed, radius changes, or geo-level bid modifiers adjust. Store specific locations + whether adds, removes, or modifier changes.</div></div>
+
+    <div class="decision-type" id="schedule_daypart"><div class="dt-header"><span class="atype">SCHEDULE_DAYPART</span><span class="desc">Flight dates, dayparting</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign.start_date</span><span class="fchip primary">campaign.end_date</span><span class="fchip primary">campaign_criterion.ad_schedule</span><span class="fchip">adset.start_time / end_time</span></div></div><div class="logic"><b>Detection:</b> Flight dates change, ad schedule criteria appear/modify, or start/end times shift. Daypart bid modifiers also trigger this.</div></div>
+
+    <div class="decision-type" id="creative_manage"><div class="dt-header"><span class="atype">CREATIVE_MANAGE</span><span class="desc">Upload/swap/rotate/enable/pause assets; DCO config</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">ad.creative.id</span><span class="fchip primary">ad.status</span><span class="fchip primary">adcreative.object_story_spec</span><span class="fchip">adcreative.video_id</span><span class="fchip">adcreative.image_hash</span></div></div><div class="logic"><b>Detection:</b> New creative IDs appear, ad status toggles, or creative assets change (new video_id, image_hash). Track adds/removes/pauses + format (video, image, carousel, RSA).</div></div>
+
+    <div class="decision-type" id="status_change"><div class="dt-header"><span class="atype">STATUS_CHANGE</span><span class="desc">Pause/enable/archive campaign, ad group, or ad</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">campaign.status</span><span class="fchip primary">ad_group.status</span><span class="fchip primary">ad_group_ad.status</span><span class="fchip">adset.effective_status</span><span class="fchip">ad.status</span></div></div><div class="logic"><b>Detection:</b> Status enum changes (ENABLED↔PAUSED↔REMOVED). Record entity level, direction (pause vs enable), context (spend at pause, days since last conversion).</div></div>
+
+    <div class="decision-type" id="frequency_cap"><div class="dt-header"><span class="atype">FREQUENCY_CAP</span><span class="desc">Set impression frequency cap</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">adset.frequency_control_specs.max_frequency</span><span class="fchip primary">adset.frequency_control_specs.interval_days</span><span class="fchip">campaign.frequency_caps</span></div></div><div class="logic"><b>Detection:</b> <code>max_frequency</code> or <code>interval_days</code> change, or frequency_control_specs appear first time. Store before/after + event type.</div></div>
+
+    <div class="decision-type" id="signal_config"><div class="dt-header"><span class="atype">SIGNAL_CONFIG</span><span class="desc">Which conversion events to optimize toward; feed/CAPI/audience inputs</span></div><div class="dt-section"><div class="label">Primary detection fields</div><div class="field-list"><span class="fchip primary">conversion_action.status</span><span class="fchip primary">campaign.conversion_goals</span><span class="fchip">adset.optimization_goal</span><span class="fchip">pixel.event_config</span><span class="fchip">actions.action_source</span></div></div><div class="logic"><b>Detection:</b> Conversion action linked/unlinked, optimization goal changes, or CAPI event sources appear. Captures changes to <b>what the platform optimizes toward</b>.</div></div>
+
+    <!-- Stored fields -->
+    <div class="stored-fields">
+      <h3>Decision Journal — Stored Fields Per Entry</h3>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">decision_id</td><td>UUID</td><td>Unique identifier</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">detected_at</td><td>timestamp</td><td>When Signal detected the change</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">occurred_at</td><td>date</td><td>When the change actually happened (from field diff)</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">decision_type</td><td>enum</td><td>One of the 16 types</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">platform</td><td>enum</td><td>GOOGLE_ADS | META | DV360 | TIKTOK</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">entity_type</td><td>enum</td><td>CAMPAIGN | AD_GROUP | AD_SET | AD | KEYWORD</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">entity_id</td><td>string</td><td>Platform-specific ID</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">entity_name</td><td>string</td><td>Human-readable name at detection time</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">field_changes</td><td>JSON[]</td><td>Array of {field, old_value, new_value}</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">confidence</td><td>float</td><td>0.0–1.0, how confident this was intentional</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">importance_level</td><td>enum</td><td>CRITICAL | HIGH | MEDIUM | LOW</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">importance_reason</td><td>string</td><td>Human-readable explanation</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">status</td><td>enum</td><td>PENDING | CONFIRMED | REJECTED</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">intent</td><td>text</td><td>Free-text from user (why)</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">intent_category</td><td>enum</td><td>GROWTH | EFFICIENCY | TESTING | SEASONAL | REACTIVE | OTHER</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">context_metrics</td><td>JSON</td><td>CPA, ROAS, spend, conversions at time of change</td></tr>
+          <tr><td style="font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-hi)">outcome_metrics</td><td>JSON</td><td>Performance 7 days after (filled retroactively)</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- BID_ADJUST -->
-  <div class="decision-type" id="bid_adjust">
-    <div class="dt-header">
-      <span class="atype">BID_ADJUST</span>
-      <span class="desc">Change bid amount, modifiers, or bid factors</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">ad_group.cpc_bid_micros</span>
-        <span class="fchip primary">ad_group_criterion.cpc_bid_micros</span>
-        <span class="fchip primary">campaign.target_cpa.target_cpa_micros</span>
-        <span class="fchip">adset.bid_amount</span>
-        <span class="fchip">campaign_criterion.bid_modifier</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Bid values or bid modifiers change by >5% between snapshots without a strategy-type change. This is a tuning decision within the same strategy — distinct from BID_STRATEGY_CHANGE.
-    </div>
-  </div>
+  <!-- ═══════════════ TAB 2: CONFIDENCE ═══════════════ -->
+  <div class="tab-panel" id="panel-confidence">
+    <h1>Confidence Scoring</h1>
+    <p class="subtitle">"Did a human intentionally make this change?" — not whether it matters (that's importance). High confidence = deliberate decision, not API glitch or auto-optimization.</p>
 
-  <!-- PACING_CHANGE -->
-  <div class="decision-type" id="pacing_change">
-    <div class="dt-header">
-      <span class="atype">PACING_CHANGE</span>
-      <span class="desc">Standard ↔ accelerated; toggle auto-allocator</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign_budget.delivery_method</span>
-        <span class="fchip primary">adset.pacing_type</span>
-        <span class="fchip">campaign.campaign_budget_optimization (CBO toggle)</span>
-        <span class="fchip">adset.budget_rebalance_flag</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> <code>delivery_method</code> changes (STANDARD↔ACCELERATED) or CBO/ABO toggle flips. Also detects enabling Advantage Campaign Budget on Meta.
-    </div>
-  </div>
-
-  <!-- AUDIENCE_TARGET -->
-  <div class="decision-type" id="audience_target">
-    <div class="dt-header">
-      <span class="atype">AUDIENCE_TARGET</span>
-      <span class="desc">Add/remove targeting (demo, interest, custom, lookalike, retargeting)</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.targeting.custom_audiences</span>
-        <span class="fchip primary">adset.targeting.lookalike_spec</span>
-        <span class="fchip primary">adset.targeting.interests</span>
-        <span class="fchip">campaign_criterion.user_list</span>
-        <span class="fchip">ad_group.audience_setting</span>
-        <span class="fchip">adset.targeting.age_min/max</span>
-        <span class="fchip">adset.targeting.genders</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Audience arrays/lists differ between snapshots — new IDs appear or existing ones vanish. We diff the audience object and record adds vs removes, plus the audience type (LAL, custom, interest, demographic).
-    </div>
-  </div>
-
-  <!-- AUDIENCE_EXPAND -->
-  <div class="decision-type" id="audience_expand">
-    <div class="dt-header">
-      <span class="atype">AUDIENCE_EXPAND</span>
-      <span class="desc">Broaden reach beyond defined segment</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.targeting.targeting_optimization</span>
-        <span class="fchip primary">adset.targeting.expansion_enabled</span>
-        <span class="fchip">campaign.audience_expansion_opt_in</span>
-        <span class="fchip">adset.targeting.flexible_spec</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Expansion flag toggles on, or <code>flexible_spec</code> broadens (interest targeting opens up). Distinguished from AUDIENCE_TARGET by checking if it's an expansion setting vs a specific audience add.
-    </div>
-  </div>
-
-  <!-- AUDIENCE_SUPPRESS -->
-  <div class="decision-type" id="audience_suppress">
-    <div class="dt-header">
-      <span class="atype">AUDIENCE_SUPPRESS</span>
-      <span class="desc">Exclude a segment from delivery</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.targeting.excluded_custom_audiences</span>
-        <span class="fchip primary">campaign_criterion.negative (user_list)</span>
-        <span class="fchip">adset.targeting.exclusions</span>
-        <span class="fchip">campaign.brand_safety_negative_keywords</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> New entries appear in exclusion lists. Any audience added to the <code>excluded_custom_audiences</code> array or a negative user list criterion added to a campaign.
-    </div>
-  </div>
-
-  <!-- KEYWORD_MANAGE -->
-  <div class="decision-type" id="keyword_manage">
-    <div class="dt-header">
-      <span class="atype">KEYWORD_MANAGE</span>
-      <span class="desc">Add/remove keywords, match types, negatives (search surfaces)</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">ad_group_criterion.keyword.text</span>
-        <span class="fchip primary">ad_group_criterion.keyword.match_type</span>
-        <span class="fchip primary">ad_group_criterion.status</span>
-        <span class="fchip primary">ad_group_criterion.negative</span>
-        <span class="fchip">campaign_criterion.keyword (campaign negatives)</span>
-        <span class="fchip">shared_set.shared_set_id (negative lists)</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> New keyword criteria appear or existing ones change status (ENABLED↔REMOVED↔PAUSED). We count adds vs removes, classify by match type, and flag if they're negative keywords (blocking) vs positive (targeting).
-    </div>
-  </div>
-
-  <!-- PLACEMENT_MANAGE -->
-  <div class="decision-type" id="placement_manage">
-    <div class="dt-header">
-      <span class="atype">PLACEMENT_MANAGE</span>
-      <span class="desc">Inventory/placement targeting, exclusions, deals/PMP</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.targeting.publisher_platforms</span>
-        <span class="fchip primary">adset.targeting.facebook_positions</span>
-        <span class="fchip primary">adset.targeting.instagram_positions</span>
-        <span class="fchip">campaign_criterion.placement</span>
-        <span class="fchip">campaign_criterion.youtube_channel</span>
-        <span class="fchip">campaign.network_settings</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Placement arrays change — platforms added/removed, specific positions toggled. On Google: network settings or placement criterion updates. On Meta: publisher_platforms or position arrays differ.
-    </div>
-  </div>
-
-  <!-- GEO_TARGET -->
-  <div class="decision-type" id="geo_target">
-    <div class="dt-header">
-      <span class="atype">GEO_TARGET</span>
-      <span class="desc">Location, radius, geo bid factors</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign_criterion.location</span>
-        <span class="fchip primary">adset.targeting.geo_locations</span>
-        <span class="fchip">campaign_criterion.proximity</span>
-        <span class="fchip">campaign_criterion.bid_modifier (location)</span>
-        <span class="fchip">adset.targeting.excluded_geo_locations</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Location criteria added/removed, radius targeting changes, or geo-level bid modifiers adjust. We store the specific locations and whether they were adds, removes, or modifier changes.
-    </div>
-  </div>
-
-  <!-- SCHEDULE_DAYPART -->
-  <div class="decision-type" id="schedule_daypart">
-    <div class="dt-header">
-      <span class="atype">SCHEDULE_DAYPART</span>
-      <span class="desc">Flight dates, dayparting</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign.start_date</span>
-        <span class="fchip primary">campaign.end_date</span>
-        <span class="fchip primary">campaign_criterion.ad_schedule</span>
-        <span class="fchip">adset.start_time</span>
-        <span class="fchip">adset.end_time</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Flight dates change, ad schedule criteria appear/modify, or start/end times on Meta ad sets shift. Daypart bid modifiers changing also triggers this.
-    </div>
-  </div>
-
-  <!-- CREATIVE_MANAGE -->
-  <div class="decision-type" id="creative_manage">
-    <div class="dt-header">
-      <span class="atype">CREATIVE_MANAGE</span>
-      <span class="desc">Upload/swap/rotate/enable/pause assets; DCO config</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">ad.creative.id</span>
-        <span class="fchip primary">ad.status</span>
-        <span class="fchip primary">adcreative.object_story_spec</span>
-        <span class="fchip">adcreative.video_id</span>
-        <span class="fchip">adcreative.image_hash</span>
-        <span class="fchip">ad_group_ad.ad.responsive_search_ad</span>
-        <span class="fchip">asset_group.listing_group_filter</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> New creative IDs appear in an ad set, ad status toggles, or creative assets change (new video_id, new image_hash). We track the count of adds/removes/pauses and the creative format (video, image, carousel, RSA).
-    </div>
-  </div>
-
-  <!-- STATUS_CHANGE -->
-  <div class="decision-type" id="status_change">
-    <div class="dt-header">
-      <span class="atype">STATUS_CHANGE</span>
-      <span class="desc">Pause/enable/archive campaign, ad group, or ad</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">campaign.status</span>
-        <span class="fchip primary">ad_group.status</span>
-        <span class="fchip primary">ad_group_ad.status</span>
-        <span class="fchip">adset.effective_status</span>
-        <span class="fchip">adset.configured_status</span>
-        <span class="fchip">ad.status</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Status enum changes (ENABLED↔PAUSED↔REMOVED). We record entity level (campaign/ad group/ad), direction (pause vs enable), and context (spend at time of pause, days since last conversion).
-    </div>
-  </div>
-
-  <!-- FREQUENCY_CAP -->
-  <div class="decision-type" id="frequency_cap">
-    <div class="dt-header">
-      <span class="atype">FREQUENCY_CAP</span>
-      <span class="desc">Set impression frequency cap</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">adset.frequency_control_specs.event</span>
-        <span class="fchip primary">adset.frequency_control_specs.max_frequency</span>
-        <span class="fchip primary">adset.frequency_control_specs.interval_days</span>
-        <span class="fchip">campaign.frequency_caps</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> <code>max_frequency</code> or <code>interval_days</code> values change, or frequency_control_specs appear for the first time. We store before/after values and the event type (IMPRESSIONS usually).
-    </div>
-  </div>
-
-  <!-- SIGNAL_CONFIG -->
-  <div class="decision-type" id="signal_config">
-    <div class="dt-header">
-      <span class="atype">SIGNAL_CONFIG</span>
-      <span class="desc">Which conversion events to optimize toward; feed/CAPI/audience inputs</span>
-    </div>
-    <div class="dt-section">
-      <div class="label">Primary detection fields</div>
-      <div class="field-list">
-        <span class="fchip primary">conversion_action.status</span>
-        <span class="fchip primary">conversion_action.category</span>
-        <span class="fchip primary">campaign.conversion_goals</span>
-        <span class="fchip">adset.promoted_object</span>
-        <span class="fchip">adset.optimization_goal</span>
-        <span class="fchip">pixel.event_config</span>
-        <span class="fchip">actions.action_source (server vs website)</span>
-      </div>
-    </div>
-    <div class="logic">
-      <b>Detection logic:</b> Conversion action linked/unlinked from a campaign, optimization goal changes on Meta ad sets, or CAPI event sources appear. This captures changes to <b>what the platform optimizes toward</b>, not the media settings themselves.
-    </div>
-  </div>
-
-  <!-- STORED FIELDS TABLE -->
-  <div class="stored-fields">
-    <h3>Decision Journal — Stored Fields Per Entry</h3>
-    <p style="color:var(--ink-mid);font-size:13.5px;margin-bottom:16px">Every confirmed decision is stored with these fields, creating the structured history Signal learns from.</p>
-    <table class="sf-table">
-      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
-      <tbody>
-        <tr><td>decision_id</td><td>UUID</td><td>Unique identifier for this decision event</td></tr>
-        <tr><td>detected_at</td><td>timestamp</td><td>When Signal detected the change</td></tr>
-        <tr><td>occurred_at</td><td>date</td><td>When the change actually happened (from field diff)</td></tr>
-        <tr><td>decision_type</td><td>enum</td><td>One of the 16 types (BUDGET_SET, BID_STRATEGY_CHANGE, etc.)</td></tr>
-        <tr><td>platform</td><td>enum</td><td>GOOGLE_ADS | META | DV360 | TIKTOK</td></tr>
-        <tr><td>entity_type</td><td>enum</td><td>CAMPAIGN | AD_GROUP | AD_SET | AD | KEYWORD</td></tr>
-        <tr><td>entity_id</td><td>string</td><td>Platform-specific ID of the changed entity</td></tr>
-        <tr><td>entity_name</td><td>string</td><td>Human-readable name at time of detection</td></tr>
-        <tr><td>field_changes</td><td>JSON[]</td><td>Array of {field, old_value, new_value} for each changed field</td></tr>
-        <tr><td>confidence</td><td>float</td><td>0.0–1.0, how confident we are this was intentional</td></tr>
-        <tr><td>status</td><td>enum</td><td>PENDING | CONFIRMED | REJECTED</td></tr>
-        <tr><td>intent</td><td>text</td><td>Free-text explanation from the user (why they made this change)</td></tr>
-        <tr><td>intent_category</td><td>enum</td><td>AI-classified: GROWTH | EFFICIENCY | TESTING | SEASONAL | REACTIVE | OTHER</td></tr>
-        <tr><td>context_metrics</td><td>JSON</td><td>Performance metrics at time of change (CPA, ROAS, spend, conversions)</td></tr>
-        <tr><td>outcome_metrics</td><td>JSON</td><td>Performance metrics 7 days after change (filled retroactively)</td></tr>
-        <tr><td>user_id</td><td>string</td><td>Who confirmed/rejected (for multi-user accounts)</td></tr>
-        <tr><td>account_id</td><td>string</td><td>Platform account identifier</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- CONFIDENCE SCORING -->
-  <div class="section" style="margin-top:60px">
-    <h2 style="color:var(--teal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">🎯 Confidence Scoring Logic</h2>
-    <p style="color:var(--ink-mid);margin-bottom:24px">Confidence answers: <strong style="color:var(--ink-hi)">"Did a human intentionally make this change?"</strong> — not whether the change matters (that's importance). A high confidence means we're very sure this was a deliberate decision, not an API glitch, platform auto-optimization, or inherited change.</p>
-
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:24px 0 12px">What Confidence Measures</h3>
-    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:24px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13.5px">
-        <div>
-          <div style="color:var(--teal);font-weight:600;margin-bottom:6px">High confidence (0.85–0.99)</div>
-          <div style="color:var(--ink-mid);line-height:1.7">"We're almost certain a human did this on purpose"<br>Example: Campaign paused at 2pm on a Tuesday — clearly manual</div>
-        </div>
-        <div>
-          <div style="color:var(--signal);font-weight:600;margin-bottom:6px">Low confidence (0.50–0.70)</div>
-          <div style="color:var(--ink-mid);line-height:1.7">"Something changed but we can't be sure it was intentional"<br>Example: Bid adjustment changed — could be automated rules</div>
-        </div>
-      </div>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:13px">
+      <div><div style="color:var(--teal);font-weight:600;margin-bottom:4px">High confidence (0.85–0.99)</div><div style="color:var(--ink-mid)">"Almost certain a human did this"<br>Campaign paused at 2pm Tuesday — clearly manual</div></div>
+      <div><div style="color:var(--signal);font-weight:600;margin-bottom:4px">Low confidence (0.50–0.70)</div><div style="color:var(--ink-mid)">"Can't be sure it was intentional"<br>Bid changed — could be automated rules</div></div>
     </div>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px">Scoring Factors (weighted sum → 0.0–1.0)</h3>
+    <h2>Scoring Factors (weighted → 0.0–1.0)</h2>
     <table>
-      <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th><th>High signal</th><th>Low signal</th></tr></thead>
+      <thead><tr><th>Factor</th><th>Weight</th><th>High signal</th><th>Low signal</th></tr></thead>
       <tbody>
-        <tr><td><strong>Field specificity</strong></td><td>25%</td><td>How specific is the changed field to human action?</td><td>campaign.status (always manual)</td><td>metrics.impressions (not a decision)</td></tr>
-        <tr><td><strong>Change pattern</strong></td><td>20%</td><td>Does the change match a known human pattern?</td><td>Round numbers ($100→$200), clear on/off states</td><td>Fractional changes (bid 1.23→1.24 = likely algo)</td></tr>
-        <tr><td><strong>Time-of-day signal</strong></td><td>15%</td><td>When did the change happen?</td><td>Business hours, weekday = likely human</td><td>3am Sunday = likely automated rule or platform</td></tr>
-        <tr><td><strong>Correlated changes</strong></td><td>15%</td><td>Did other fields change in a logical cluster?</td><td>Budget + bid + status together = human campaign setup</td><td>Single micro-adjustment in isolation = algo</td></tr>
-        <tr><td><strong>Platform automation check</strong></td><td>15%</td><td>Could the platform's own system have done this?</td><td>No active rules/scripts for this entity</td><td>Auto-bidding enabled, budget optimizer active</td></tr>
-        <tr><td><strong>Change velocity</strong></td><td>10%</td><td>How fast did the change happen?</td><td>Single discrete change = human click</td><td>Gradual increment over hours = algorithmic</td></tr>
+        <tr><td><strong>Field specificity</strong></td><td>25%</td><td>campaign.status (always manual)</td><td>metrics.impressions (not a decision)</td></tr>
+        <tr><td><strong>Change pattern</strong></td><td>20%</td><td>Round numbers ($100→$200)</td><td>Fractional (bid 1.23→1.24 = algo)</td></tr>
+        <tr><td><strong>Time-of-day</strong></td><td>15%</td><td>Business hours, weekday</td><td>3am Sunday = automated rule</td></tr>
+        <tr><td><strong>Correlated changes</strong></td><td>15%</td><td>Budget + bid + status together</td><td>Single micro-adjustment = algo</td></tr>
+        <tr><td><strong>Platform automation</strong></td><td>15%</td><td>No active rules for entity</td><td>Auto-bidding / CBO active</td></tr>
+        <tr><td><strong>Change velocity</strong></td><td>10%</td><td>Single discrete change = click</td><td>Gradual increment = algorithmic</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Decision-type Base Confidence</h3>
-    <p style="color:var(--ink-mid);margin-bottom:16px">Some decision types are inherently more "human" than others. This is the starting baseline before factors adjust:</p>
+    <h2>Base Confidence by Type</h2>
     <table>
       <thead><tr><th>Decision Type</th><th>Base</th><th>Rationale</th></tr></thead>
       <tbody>
-        <tr><td>STATUS_CHANGE</td><td>0.95</td><td>Pausing/enabling is almost always a deliberate human action</td></tr>
-        <tr><td>CREATIVE_MANAGE</td><td>0.92</td><td>Uploading new creative requires human effort</td></tr>
-        <tr><td>BUDGET_SET</td><td>0.88</td><td>Budget changes are typically intentional (but can be rules-based)</td></tr>
-        <tr><td>BID_STRATEGY_CHANGE</td><td>0.90</td><td>Switching strategy type is a manual settings change</td></tr>
-        <tr><td>AUDIENCE_TARGET</td><td>0.85</td><td>Audience selection is intentional (but expansion can be auto)</td></tr>
-        <tr><td>KEYWORD_MANAGE</td><td>0.82</td><td>Adding/pausing keywords is human, but some auto-apply recommendations</td></tr>
-        <tr><td>BUDGET_REALLOCATE</td><td>0.80</td><td>Multi-entity budget shift is likely human, but CBO can do it</td></tr>
-        <tr><td>FREQUENCY_CAP</td><td>0.88</td><td>Cap adjustments are manual settings changes</td></tr>
-        <tr><td>GEO_TARGET</td><td>0.86</td><td>Geographic changes are deliberate targeting decisions</td></tr>
+        <tr><td>STATUS_CHANGE</td><td style="color:var(--teal)">0.95</td><td>Pause/enable is almost always deliberate</td></tr>
+        <tr><td>CREATIVE_MANAGE</td><td style="color:var(--teal)">0.92</td><td>Uploading creative requires human effort</td></tr>
+        <tr><td>SIGNAL_CONFIG</td><td style="color:var(--teal)">0.91</td><td>Conversion config is always intentional</td></tr>
+        <tr><td>BID_STRATEGY_CHANGE</td><td style="color:var(--teal)">0.90</td><td>Strategy switch is manual</td></tr>
+        <tr><td>BUDGET_SET</td><td style="color:var(--teal)">0.88</td><td>Typically intentional (can be rules-based)</td></tr>
+        <tr><td>FREQUENCY_CAP</td><td style="color:var(--teal)">0.88</td><td>Cap adjustments are manual settings</td></tr>
+        <tr><td>SCHEDULE_DAYPART</td><td style="color:var(--teal)">0.87</td><td>Schedule changes are manual config</td></tr>
+        <tr><td>GEO_TARGET</td><td style="color:var(--teal)">0.86</td><td>Geographic changes are deliberate</td></tr>
+        <tr><td>AUDIENCE_TARGET</td><td style="color:var(--teal)">0.85</td><td>Selection is intentional (expansion can be auto)</td></tr>
         <tr><td>PLACEMENT_MANAGE</td><td>0.84</td><td>Placement selection is manual</td></tr>
-        <tr><td>SCHEDULE_DAYPART</td><td>0.87</td><td>Schedule changes are manual configuration</td></tr>
-        <tr><td>SIGNAL_CONFIG</td><td>0.91</td><td>Conversion/attribution config is always intentional</td></tr>
-        <tr><td>PACING_CHANGE</td><td>0.78</td><td>Can be auto-pacing by platform, so lower base</td></tr>
-        <tr><td>AUDIENCE_EXPAND</td><td>0.72</td><td>Meta's "Advantage+" can auto-expand — hard to tell</td></tr>
-        <tr><td>AUDIENCE_SUPPRESS</td><td>0.83</td><td>Suppressions are typically manual, but can be rule-triggered</td></tr>
-        <tr><td>BID_ADJUST</td><td>0.65</td><td>Many bid adjustments are algorithmic — lowest confidence type</td></tr>
+        <tr><td>AUDIENCE_SUPPRESS</td><td>0.83</td><td>Typically manual, can be rule-triggered</td></tr>
+        <tr><td>KEYWORD_MANAGE</td><td>0.82</td><td>Human, but some auto-apply recommendations</td></tr>
+        <tr><td>BUDGET_REALLOCATE</td><td>0.80</td><td>Likely human, but CBO can do it</td></tr>
+        <tr><td>PACING_CHANGE</td><td style="color:var(--signal)">0.78</td><td>Can be auto-pacing by platform</td></tr>
+        <tr><td>AUDIENCE_EXPAND</td><td style="color:var(--signal)">0.72</td><td>Meta Advantage+ auto-expands</td></tr>
+        <tr><td>BID_ADJUST</td><td style="color:var(--signal)">0.65</td><td>Many bid adjustments are algorithmic</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Penalties (reduce score)</h3>
-    <table>
-      <thead><tr><th>Signal</th><th>Penalty</th><th>Why</th></tr></thead>
-      <tbody>
-        <tr><td>Change at 00:00–05:00 local</td><td>−0.15</td><td>Likely a scheduled rule, not a human at their desk</td></tr>
-        <tr><td>Auto-bidding / CBO active on entity</td><td>−0.20</td><td>Platform optimizer may have made this change</td></tr>
-        <tr><td>Change matches a Google/Meta "recommendation applied"</td><td>−0.25</td><td>Could be auto-applied recommendation, not a deliberate decision</td></tr>
-        <tr><td>Fractional/irregular value (e.g. $127.43)</td><td>−0.10</td><td>Humans set round numbers; algos produce decimals</td></tr>
-        <tr><td>Multiple micro-changes in rapid sequence</td><td>−0.12</td><td>Automated scripts or bulk tools, not individual decisions</td></tr>
-        <tr><td>Entity has active automated rules</td><td>−0.18</td><td>Rules engine may have triggered this change</td></tr>
-      </tbody>
-    </table>
-
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Boosters (increase score)</h3>
-    <table>
-      <thead><tr><th>Signal</th><th>Boost</th><th>Why</th></tr></thead>
-      <tbody>
-        <tr><td>Round number change ($100, $500, 50%)</td><td>+0.08</td><td>Humans think in round numbers</td></tr>
-        <tr><td>Change during business hours (9am–6pm local)</td><td>+0.05</td><td>Human at desk</td></tr>
-        <tr><td>Change logged in platform's change history with user email</td><td>+0.15</td><td>Platform confirms a human account made it</td></tr>
-        <tr><td>Correlated logical cluster (3+ related fields)</td><td>+0.10</td><td>Humans make holistic changes; algos tweak one thing</td></tr>
-        <tr><td>First change of this type ever (no automation pattern)</td><td>+0.07</td><td>Can't be a recurring rule if it never happened before</td></tr>
-        <tr><td>Status toggled (ENABLED↔PAUSED)</td><td>+0.10</td><td>Almost never automated unless explicitly scheduled</td></tr>
-      </tbody>
-    </table>
-
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Example Calculations</h3>
-    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-family:'IBM Plex Mono';font-size:12.5px;color:var(--ink-mid);line-height:2.2">
-      <div style="margin-bottom:16px">
-        <span style="color:var(--ink-hi);font-weight:600">Detection 4: STATUS_CHANGE — "Paused Old Brand - DSA"</span><br>
-        Base: <span style="color:var(--teal)">0.95</span> (STATUS_CHANGE)<br>
-        + Business hours change: <span style="color:var(--teal)">+0.05</span><br>
-        + Status toggle boost: <span style="color:var(--teal)">+0.10</span><br>
-        − cap at 0.99: clipped<br>
-        <span style="color:var(--ink-hi)">Final: 0.97</span>
-      </div>
-      <div style="margin-bottom:16px">
-        <span style="color:var(--ink-hi);font-weight:600">Detection 7: BUDGET_REALLOCATE — "Retargeting → Prospecting"</span><br>
-        Base: <span style="color:var(--teal)">0.80</span> (BUDGET_REALLOCATE)<br>
-        + Correlated cluster (two budgets changed same day): <span style="color:var(--teal)">+0.10</span><br>
-        − CBO active on campaign: <span style="color:var(--signal)">−0.12</span> (partial penalty — net budget was constant, suggesting human intent)<br>
-        + Round numbers ($40, $200): <span style="color:var(--teal)">+0.08</span><br>
-        <span style="color:var(--ink-hi)">Final: 0.83</span> (capped: min with penalties, still suggests human but CBO adds doubt)
+    <h2>Penalties &amp; Boosters</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <h3 style="color:var(--bad)">Penalties (reduce score)</h3>
+        <table><thead><tr><th>Signal</th><th>Penalty</th></tr></thead><tbody>
+          <tr><td>Change at 00:00–05:00 local</td><td>−0.15</td></tr>
+          <tr><td>Auto-bidding / CBO active</td><td>−0.20</td></tr>
+          <tr><td>Matches "recommendation applied"</td><td>−0.25</td></tr>
+          <tr><td>Fractional value (e.g. $127.43)</td><td>−0.10</td></tr>
+          <tr><td>Rapid micro-changes in sequence</td><td>−0.12</td></tr>
+          <tr><td>Entity has active automated rules</td><td>−0.18</td></tr>
+        </tbody></table>
       </div>
       <div>
-        <span style="color:var(--ink-hi);font-weight:600">Detection 5: AUDIENCE_TARGET — "New lookalike added"</span><br>
-        Base: <span style="color:var(--teal)">0.85</span> (AUDIENCE_TARGET)<br>
-        + Business hours: <span style="color:var(--teal)">+0.05</span><br>
-        − Advantage+ could auto-expand: <span style="color:var(--signal)">−0.08</span><br>
-        + New audience ID (never existed before): <span style="color:var(--teal)">+0.07</span><br>
-        <span style="color:var(--ink-hi)">Final: 0.86</span> (likely human — creating a new LAL requires manual effort)
+        <h3 style="color:var(--teal)">Boosters (increase score)</h3>
+        <table><thead><tr><th>Signal</th><th>Boost</th></tr></thead><tbody>
+          <tr><td>Round number ($100, $500, 50%)</td><td>+0.08</td></tr>
+          <tr><td>Business hours (9am–6pm)</td><td>+0.05</td></tr>
+          <tr><td>Change history shows user email</td><td>+0.15</td></tr>
+          <tr><td>Correlated cluster (3+ fields)</td><td>+0.10</td></tr>
+          <tr><td>First-ever change of this type</td><td>+0.07</td></tr>
+          <tr><td>Status toggled (ENABLED↔PAUSED)</td><td>+0.10</td></tr>
+        </tbody></table>
       </div>
     </div>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Thresholds for Actions</h3>
+    <h2>Example Calculations</h2>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:18px;font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-mid);line-height:2.2">
+      <div style="margin-bottom:14px"><span style="color:var(--ink-hi);font-weight:600">STATUS_CHANGE — "Paused Old Brand - DSA"</span><br>Base: <span style="color:var(--teal)">0.95</span> + business hours <span style="color:var(--teal)">+0.05</span> + status toggle <span style="color:var(--teal)">+0.10</span> → capped → <span style="color:var(--ink-hi)">Final: 0.97</span></div>
+      <div style="margin-bottom:14px"><span style="color:var(--ink-hi);font-weight:600">BUDGET_REALLOCATE — "Retargeting → Prospecting"</span><br>Base: <span style="color:var(--teal)">0.80</span> + cluster <span style="color:var(--teal)">+0.10</span> − CBO <span style="color:var(--signal)">−0.12</span> + round numbers <span style="color:var(--teal)">+0.08</span> → <span style="color:var(--ink-hi)">Final: 0.83</span></div>
+      <div><span style="color:var(--ink-hi);font-weight:600">AUDIENCE_TARGET — "New lookalike"</span><br>Base: <span style="color:var(--teal)">0.85</span> + hours <span style="color:var(--teal)">+0.05</span> − Advantage+ <span style="color:var(--signal)">−0.08</span> + new ID <span style="color:var(--teal)">+0.07</span> → <span style="color:var(--ink-hi)">Final: 0.86</span></div>
+    </div>
+
+    <h2>Action Thresholds</h2>
     <table>
       <thead><tr><th>Range</th><th>Interpretation</th><th>System behavior</th></tr></thead>
       <tbody>
-        <tr><td style="color:var(--teal);font-weight:600">0.90 – 0.99</td><td>Almost certainly a human decision</td><td>Show to user for confirmation, pre-select "Confirm"</td></tr>
-        <tr><td style="color:var(--teal);font-weight:600">0.75 – 0.89</td><td>Likely a human decision</td><td>Show to user, neutral state (no pre-selection)</td></tr>
-        <tr><td style="color:var(--signal);font-weight:600">0.55 – 0.74</td><td>Uncertain — could be human or automated</td><td>Show with "automation suspected" warning, ask user to verify</td></tr>
-        <tr><td style="color:#F2685B;font-weight:600">Below 0.55</td><td>Likely automated / not a decision</td><td>Don't surface by default. Log to "Automated Changes" archive only.</td></tr>
+        <tr><td style="color:var(--teal);font-weight:600">0.90–0.99</td><td>Almost certainly human</td><td>Show, pre-select "Confirm"</td></tr>
+        <tr><td style="color:var(--teal);font-weight:600">0.75–0.89</td><td>Likely human</td><td>Show, neutral state</td></tr>
+        <tr><td style="color:var(--signal);font-weight:600">0.55–0.74</td><td>Uncertain</td><td>Show with "automation suspected" warning</td></tr>
+        <tr><td style="color:var(--bad);font-weight:600">Below 0.55</td><td>Likely automated</td><td>Don't surface. Log to archive only.</td></tr>
       </tbody>
     </table>
-
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence vs Importance — How They Differ</h3>
-    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-size:13.5px;color:var(--ink-mid);line-height:1.8">
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line)"></th><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line);color:var(--teal)">Confidence</th><th style="text-align:left;padding:8px;border-bottom:1px solid var(--line);color:var(--signal)">Importance</th></tr></thead>
-        <tbody>
-          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Question</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Did this happen on purpose?</td><td style="padding:8px;border-bottom:1px solid var(--line)">How much does it matter?</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Inputs</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Time-of-day, field type, change pattern, automation context</td><td style="padding:8px;border-bottom:1px solid var(--line)">Spend at risk, mid-flight status, magnitude, learning phase</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid var(--line)"><strong style="color:var(--ink-hi)">Used for</strong></td><td style="padding:8px;border-bottom:1px solid var(--line)">Filtering — should we show this to the user at all?</td><td style="padding:8px;border-bottom:1px solid var(--line)">Prioritization — which confirmed decisions need attention first?</td></tr>
-          <tr><td style="padding:8px"><strong style="color:var(--ink-hi)">Example</strong></td><td style="padding:8px">Bid changed at 3am by 0.03 → conf 0.52 (probably algo, don't show)</td><td style="padding:8px">Campaign paused mid-flight → importance CRITICAL (review NOW)</td></tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 
-  <!-- IMPORTANCE SCORING -->
-  <div class="section" style="margin-top:60px">
-    <h2 style="color:var(--signal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">⚡ Importance Scoring Logic</h2>
-    <p style="color:var(--ink-mid);margin-bottom:24px">Every detected decision receives an importance score (CRITICAL / HIGH / MEDIUM / LOW) based on contextual signals available at detection time. This helps teams prioritize which decisions to review first.</p>
+  <!-- ═══════════════ TAB 3: IMPORTANCE ═══════════════ -->
+  <div class="tab-panel" id="panel-importance">
+    <h1>Importance Scoring</h1>
+    <p class="subtitle">Every detected decision gets an importance level (CRITICAL / HIGH / MEDIUM / LOW) based on contextual signals. Helps teams prioritize which to review first.</p>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:24px 0 12px">Scoring Factors</h3>
+    <h2>Scoring Factors</h2>
     <table>
       <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th><th>Examples</th></tr></thead>
       <tbody>
-        <tr><td><strong>Spend at Risk</strong></td><td>30%</td><td>Daily/weekly budget affected by this change</td><td>$400/day budget = high; $15/day = low</td></tr>
-        <tr><td><strong>Mid-flight Disruption</strong></td><td>25%</td><td>Was the entity active & spending when changed?</td><td>Paused before end_date while spending = critical; Scheduled future change = low</td></tr>
-        <tr><td><strong>Change Magnitude</strong></td><td>20%</td><td>Percentage or absolute size of the change</td><td>+100% budget = high; +10% bid adjust = low</td></tr>
-        <tr><td><strong>Learning Phase Trigger</strong></td><td>15%</td><td>Does this change reset the platform's optimization model?</td><td>Bid strategy switch = resets; Creative add = doesn't</td></tr>
-        <tr><td><strong>Destructive vs Additive</strong></td><td>10%</td><td>Does it remove/pause something, or add new?</td><td>Pausing campaign = destructive; Adding keyword = additive</td></tr>
+        <tr><td><strong>Spend at Risk</strong></td><td>30%</td><td>Budget affected by this change</td><td>$400/day = high; $15/day = low</td></tr>
+        <tr><td><strong>Mid-flight Disruption</strong></td><td>25%</td><td>Was entity active &amp; spending?</td><td>Paused while spending = critical</td></tr>
+        <tr><td><strong>Change Magnitude</strong></td><td>20%</td><td>% or absolute size</td><td>+100% budget = high; +10% bid = low</td></tr>
+        <tr><td><strong>Learning Phase Trigger</strong></td><td>15%</td><td>Resets optimization model?</td><td>Bid strategy switch = resets</td></tr>
+        <tr><td><strong>Destructive vs Additive</strong></td><td>10%</td><td>Removes or adds?</td><td>Pausing = destructive; keyword add = additive</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Level Definitions</h3>
+    <h2>Level Definitions</h2>
     <table>
-      <thead><tr><th>Level</th><th>Score Range</th><th>Visual</th><th>Meaning</th></tr></thead>
+      <thead><tr><th>Level</th><th>Score</th><th>Visual</th><th>Meaning</th></tr></thead>
       <tbody>
-        <tr><td style="color:#F2685B;font-weight:600">CRITICAL</td><td>0.80 – 1.00</td><td>●●●●● (5 red dots)</td><td>Immediate review needed. Significant spend at risk, mid-flight disruption, or learning phase reset on high-budget entity.</td></tr>
-        <tr><td style="color:#FF8A3D;font-weight:600">HIGH</td><td>0.55 – 0.79</td><td>●●●●○ (4 orange dots)</td><td>Review within 24h. Large budget changes, strategy shifts, or audience narrowing that redirects spend.</td></tr>
-        <tr><td style="color:#34D8C4;font-weight:600">MEDIUM</td><td>0.30 – 0.54</td><td>●●●○○ (3 teal dots)</td><td>Standard tracking. Additive changes, routine optimizations, or moderate adjustments.</td></tr>
-        <tr><td style="color:#5E6B78;font-weight:600">LOW</td><td>0.00 – 0.29</td><td>●●○○○ (2 gray dots)</td><td>Informational. Minor tweaks, scheduled changes, or low-budget entities.</td></tr>
+        <tr><td style="color:var(--bad);font-weight:600">CRITICAL</td><td>0.80–1.00</td><td>●●●●●</td><td>Immediate review. Significant spend at risk, mid-flight disruption, learning phase reset.</td></tr>
+        <tr><td style="color:var(--signal);font-weight:600">HIGH</td><td>0.55–0.79</td><td>●●●●○</td><td>Review within 24h. Large budget changes, strategy shifts, audience narrowing.</td></tr>
+        <tr><td style="color:var(--teal);font-weight:600">MEDIUM</td><td>0.30–0.54</td><td>●●●○○</td><td>Standard tracking. Additive changes, routine optimizations.</td></tr>
+        <tr><td style="color:var(--ink-lo);font-weight:600">LOW</td><td>0.00–0.29</td><td>●●○○○</td><td>Informational. Minor tweaks, scheduled changes, low-budget entities.</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Decision-specific Scoring Rules</h3>
+    <h2>Auto-Escalation Rules by Type</h2>
     <table>
-      <thead><tr><th>Decision Type</th><th>Auto-CRITICAL if…</th><th>Auto-HIGH if…</th><th>Typical default</th></tr></thead>
+      <thead><tr><th>Decision Type</th><th>Auto-CRITICAL if…</th><th>Auto-HIGH if…</th><th>Default</th></tr></thead>
       <tbody>
-        <tr><td>BUDGET_SET</td><td>change ≥ +100% AND daily_spend > $100</td><td>change ≥ +50% OR budget > $200/day</td><td>MEDIUM</td></tr>
-        <tr><td>BUDGET_REALLOCATE</td><td>source loses > 50% AND was profitable</td><td>any reallocation > $50/day</td><td>HIGH</td></tr>
-        <tr><td>BID_STRATEGY_CHANGE</td><td>always (resets learning phase)</td><td>—</td><td>CRITICAL</td></tr>
-        <tr><td>BID_ADJUST</td><td>adjustment > ±50% on top entity</td><td>adjustment > ±25%</td><td>MEDIUM</td></tr>
-        <tr><td>PACING_CHANGE</td><td>accelerated pacing + budget > $200/day</td><td>any pacing change on active campaign</td><td>MEDIUM</td></tr>
-        <tr><td>AUDIENCE_TARGET</td><td>audience replaced (not expanded) + learning reset</td><td>lookalike narrowed OR new audience added</td><td>HIGH</td></tr>
-        <tr><td>AUDIENCE_EXPAND</td><td>expands to broad/open targeting</td><td>adds new interest or lookalike layer</td><td>MEDIUM</td></tr>
-        <tr><td>AUDIENCE_SUPPRESS</td><td>suppressions removed (opens flood)</td><td>new suppression on large segment</td><td>MEDIUM</td></tr>
-        <tr><td>KEYWORD_MANAGE</td><td>pause of >50% of keywords</td><td>broad match addition on high-spend group</td><td>MEDIUM</td></tr>
-        <tr><td>PLACEMENT_MANAGE</td><td>placements reduced to single channel</td><td>new placement with no history</td><td>LOW</td></tr>
-        <tr><td>GEO_TARGET</td><td>removes major market (&gt;20% of spend)</td><td>adds new country/market</td><td>MEDIUM</td></tr>
-        <tr><td>SCHEDULE_DAYPART</td><td>reduces active hours by >50%</td><td>major schedule change during peak</td><td>LOW</td></tr>
-        <tr><td>CREATIVE_MANAGE</td><td>removes all creatives (ad goes blank)</td><td>replaces primary creative on top ad</td><td>MEDIUM</td></tr>
-        <tr><td>STATUS_CHANGE</td><td>paused before end_date while spending</td><td>enabled with no recent performance data</td><td>CRITICAL (pause) / HIGH (enable)</td></tr>
-        <tr><td>FREQUENCY_CAP</td><td>cap removed entirely</td><td>cap change > 60% on awareness campaign</td><td>MEDIUM</td></tr>
-        <tr><td>SIGNAL_CONFIG</td><td>conversion tracking removed</td><td>attribution window changed</td><td>HIGH</td></tr>
+        <tr><td>BUDGET_SET</td><td>≥+100% AND spend &gt;$100/day</td><td>≥+50% OR &gt;$200/day</td><td>MEDIUM</td></tr>
+        <tr><td>BUDGET_REALLOCATE</td><td>Source loses &gt;50% AND profitable</td><td>Reallocation &gt;$50/day</td><td>HIGH</td></tr>
+        <tr><td>BID_STRATEGY_CHANGE</td><td>Always (resets learning)</td><td>—</td><td>CRITICAL</td></tr>
+        <tr><td>BID_ADJUST</td><td>±50% on top entity</td><td>±25%</td><td>MEDIUM</td></tr>
+        <tr><td>PACING_CHANGE</td><td>Accelerated + &gt;$200/day</td><td>Any on active campaign</td><td>MEDIUM</td></tr>
+        <tr><td>AUDIENCE_TARGET</td><td>Replaced + learning reset</td><td>Narrowed OR new audience</td><td>HIGH</td></tr>
+        <tr><td>STATUS_CHANGE</td><td>Paused before end_date while spending</td><td>Enabled with no recent data</td><td>CRITICAL/HIGH</td></tr>
+        <tr><td>FREQUENCY_CAP</td><td>Cap removed entirely</td><td>&gt;60% change on awareness</td><td>MEDIUM</td></tr>
+        <tr><td>SIGNAL_CONFIG</td><td>Conversion tracking removed</td><td>Attribution window changed</td><td>HIGH</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Contextual Boosters</h3>
-    <p style="color:var(--ink-mid);margin-bottom:16px">These factors can upgrade importance by one level:</p>
+    <h2>Contextual Boosters (+1 level)</h2>
     <table>
-      <thead><tr><th>Booster</th><th>Condition</th><th>Effect</th></tr></thead>
+      <thead><tr><th>Booster</th><th>Condition</th></tr></thead>
       <tbody>
-        <tr><td>Performance degradation</td><td>CPA trending up >20% over 7 days at time of change</td><td>+1 level (reactive change under pressure)</td></tr>
-        <tr><td>Peak season</td><td>Change made during brand's identified peak period</td><td>+1 level (amplified impact)</td></tr>
-        <tr><td>Multiple simultaneous</td><td>3+ decisions on same entity within 48h</td><td>+1 level (compound risk)</td></tr>
-        <tr><td>No history</td><td>First-ever change of this type for this entity</td><td>+1 level (no baseline to compare)</td></tr>
+        <tr><td>Performance degradation</td><td>CPA trending up &gt;20% over 7 days</td></tr>
+        <tr><td>Peak season</td><td>Change during brand's peak period</td></tr>
+        <tr><td>Multiple simultaneous</td><td>3+ decisions on same entity within 48h</td></tr>
+        <tr><td>No history</td><td>First-ever change of this type for entity</td></tr>
       </tbody>
     </table>
 
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Importance Reason String</h3>
-    <p style="color:var(--ink-mid);margin-bottom:16px">Each importance score includes a human-readable reason string explaining WHY this level was assigned. Format:</p>
-    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono';font-size:13px;color:var(--ink-mid);line-height:2">
-      <code style="color:var(--teal)">{LEVEL}</code> · <code style="color:var(--ink-hi)">{primary_factor}</code> · <code style="color:var(--ink-hi)">{spend_context}</code> · <code style="color:var(--ink-hi)">{additional_signal}</code><br>
-      <span style="color:var(--ink-lo)">Examples:</span><br>
-      <span style="color:#F2685B">CRITICAL</span> · paused before end_date · was spending $45/day · 0 conversions last 8 days<br>
-      <span style="color:#FF8A3D">HIGH</span> · +100% budget on active campaign · $200/day at stake<br>
-      <span style="color:#34D8C4">MEDIUM</span> · additive (new keywords) · broad match opens spend to unknowns<br>
-      <span style="color:#5E6B78">LOW</span> · minor schedule adjustment · off-peak hours only · &lt;$20/day entity
+    <h2>Reason String Format</h2>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:16px;font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-mid);line-height:2.2">
+      <code style="color:var(--teal)">{LEVEL}</code> · <code style="color:var(--ink-hi)">{primary_factor}</code> · <code style="color:var(--ink-hi)">{spend_context}</code> · <code style="color:var(--ink-hi)">{signal}</code><br>
+      <span style="color:var(--bad)">CRITICAL</span> · paused before end_date · was spending $45/day · 0 conversions last 8 days<br>
+      <span style="color:var(--signal)">HIGH</span> · +100% budget on active campaign · $200/day at stake<br>
+      <span style="color:var(--teal)">MEDIUM</span> · additive (new keywords) · broad match opens spend to unknowns<br>
+      <span style="color:var(--ink-lo)">LOW</span> · minor schedule adjustment · off-peak hours only · &lt;$20/day entity
     </div>
   </div>
 
-  <!-- JOURNAL SCHEMA UPDATE: importance field -->
-  <div class="section" style="margin-top:40px">
-    <h3 style="color:var(--ink-hi);font-size:16px;margin-bottom:12px">Updated Journal Schema — Importance Fields</h3>
-    <p style="color:var(--ink-mid);margin-bottom:16px">Two new fields added to the Decision Journal:</p>
-    <table>
-      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <!-- ═══════════════ TAB 4: CHANGE REPORTS ═══════════════ -->
+  <div class="tab-panel" id="panel-reports">
+    <h1>Ad Platform Change Reports</h1>
+    <p class="subtitle">Real change events from Google Ads &amp; Meta Ads APIs. This is the raw data Signal ingests, diffs, and classifies into decisions.</p>
+
+    <h2><span style="color:#4267B2">f</span> Meta Ads — Activity Log</h2>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Timestamp</th><th>Actor</th><th>Object</th><th>Name</th><th>Event</th><th>Field</th><th>Old</th><th>New</th></tr></thead>
       <tbody>
-        <tr><td>importance_level</td><td>enum</td><td>CRITICAL | HIGH | MEDIUM | LOW</td></tr>
-        <tr><td>importance_reason</td><td>string</td><td>Human-readable explanation of why this level was assigned (see format above)</td></tr>
-        <tr><td>importance_score</td><td>float</td><td>0.0–1.0 raw score before bucketing into levels</td></tr>
-        <tr><td>importance_factors</td><td>JSON</td><td>Breakdown: {spend_at_risk, mid_flight, magnitude, learning_phase, destructive, boosters[]}</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 14:32</td><td>Alon Haze</td><td>AD_SET</td><td>Summer Sale - Retargeting</td><td>Updated Budget</td><td style="color:var(--signal)">daily_budget</td><td>$50</td><td style="color:var(--teal)">$85</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 09:15</td><td>Alon Haze</td><td>CAMPAIGN</td><td>Brand Awareness - LAL US</td><td>Updated Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">PAUSED</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 22:05</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD</td><td>DPA - Catalog Carousel</td><td>Created</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 18:10</td><td>Alon Haze</td><td>CREATIVE</td><td>Carousel - Summer</td><td>Updated</td><td style="color:var(--signal)">body</td><td>spring collection</td><td style="color:var(--teal)">summer collection</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 15:45</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD_SET</td><td>Prospecting - Interest</td><td>Targeting</td><td style="color:var(--signal)">interests</td><td>[Fashion]</td><td style="color:var(--teal)">[Fashion, Outdoor]</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 11:20</td><td>Gur Dotan</td><td>CAMPAIGN</td><td>Conversions - CAPI</td><td>Created</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 20:30</td><td>Alon Haze</td><td>AUDIENCE</td><td>Website Visitors 30d</td><td>Updated</td><td style="color:var(--signal)">retention_days</td><td>14</td><td style="color:var(--teal)">30</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 16:00</td><td style="color:var(--ink-lo)">System</td><td>AD</td><td>Video - Brand Story</td><td>Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">DISAPPROVED</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2><span style="color:#4285F4">G</span> Google Ads — Change Events</h2>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Timestamp</th><th>Actor</th><th>Client</th><th>Object</th><th>Name</th><th>Op</th><th>Fields</th><th>Old</th><th>New</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 16:45</td><td>ahaze@sf</td><td>Web UI</td><td>AD_GROUP</td><td>Brand Keywords [High Intent]</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid, name</td><td>$1.50</td><td style="color:var(--teal)">$2.25</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 11:20</td><td style="color:var(--ink-lo)">api-service</td><td>API</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">budget</td><td>Budget A</td><td style="color:var(--teal)">Budget B</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 08:55</td><td>ahaze@sf</td><td>Web UI</td><td>AD</td><td>RSA - Salesforce CRM</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">3 headlines</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 07:30</td><td>gdotan@sf</td><td>Web UI</td><td>KEYWORD</td><td>salesforce crm pricing</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Exact / $3.50</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 19:10</td><td>ahaze@sf</td><td>Web UI</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ENABLED</td><td style="color:var(--bad)">PAUSED</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 14:22</td><td style="color:var(--ink-lo)">api-service</td><td>API</td><td>AD_GROUP</td><td>Competitor Keywords - Broad</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid</td><td>$4.20</td><td style="color:var(--teal)">$3.80</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 10:05</td><td>gdotan@sf</td><td>Web UI</td><td>CAMPAIGN</td><td>PMax - Lead Gen</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Max conversions</td></tr>
+        <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-20 23:00</td><td style="color:var(--ink-lo)">api-service</td><td>API</td><td>ASSET</td><td>Sitelink - Free Trial</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Sitelink</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>How Signal Uses Change Reports</h2>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:18px;font-size:13px;color:var(--ink-mid);line-height:1.8;display:grid;grid-template-columns:auto 1fr;gap:6px 14px">
+      <span style="color:var(--teal);font-weight:600">1.</span><span><b style="color:var(--ink-hi)">Ingest</b> — Pull from Google Change History &amp; Meta Activity Log every hour</span>
+      <span style="color:var(--teal);font-weight:600">2.</span><span><b style="color:var(--ink-hi)">Normalize</b> — Map into unified schema (entity_type, field, old/new)</span>
+      <span style="color:var(--teal);font-weight:600">3.</span><span><b style="color:var(--ink-hi)">Filter</b> — Separate humans (Web UI / named) from automated (API / bots)</span>
+      <span style="color:var(--teal);font-weight:600">4.</span><span><b style="color:var(--ink-hi)">Classify</b> — Map to one of 16 decision types by field + operation</span>
+      <span style="color:var(--teal);font-weight:600">5.</span><span><b style="color:var(--ink-hi)">Score</b> — Calculate confidence + importance</span>
+      <span style="color:var(--teal);font-weight:600">6.</span><span><b style="color:var(--ink-hi)">Present</b> — Surface in Decision Tracker for confirmation</span>
+    </div>
+
+    <h2>Confidence Applied to Events</h2>
+    <table>
+      <thead><tr><th>Event</th><th>Actor</th><th>Conf.</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Budget $50→$85 (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.94</td><td>Named human, business hours, round-ish</td></tr>
+        <tr><td>Campaign PAUSED (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.96</td><td>Status toggle, morning</td></tr>
+        <tr><td>DPA created (Meta)</td><td style="color:var(--ink-lo)">Bot</td><td style="color:var(--signal)">0.38</td><td>Bot actor, late night — filtered out</td></tr>
+        <tr><td>CPC $1.50→$2.25 (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.91</td><td>Web UI, +50% round</td></tr>
+        <tr><td>Campaign PAUSED (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.97</td><td>Web UI, status toggle — classic manual</td></tr>
+        <tr><td>Bid $4.20→$3.80 (Google)</td><td style="color:var(--ink-lo)">api-svc</td><td style="color:var(--signal)">0.48</td><td>API actor, fractional = likely rule</td></tr>
       </tbody>
     </table>
+
+    <h3>Money Conversion</h3>
+    <table><thead><tr><th>Platform</th><th>Raw</th><th>Example</th><th>USD</th></tr></thead><tbody>
+      <tr><td>Google Ads</td><td>Micros</td><td class="mono">2250000</td><td style="color:var(--teal)">$2.25</td></tr>
+      <tr><td>Meta Ads</td><td>Cents</td><td class="mono">8500</td><td style="color:var(--teal)">$85.00</td></tr>
+    </tbody></table>
   </div>
 
-  <!-- AD PLATFORM CHANGE REPORTS -->
-  <div class="section" style="margin-top:60px">
-    <h2 style="color:var(--teal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">📊 Ad Platform Change Reports</h2>
-    <p style="color:var(--ink-mid);margin-bottom:28px">Real change events from Google Ads &amp; Meta Ads APIs. This is the raw data Signal ingests, diffs, and classifies into the 16 decision types.</p>
+  <!-- ═══════════════ TAB 5: VALUE TIMELINE ═══════════════ -->
+  <div class="tab-panel" id="panel-timeline">
+    <h1>Day-0 → Day-30 Value Timeline</h1>
+    <p class="subtitle">What the customer gets, when — before the decision reservoir exists. No empty dashboards, no "check back in a quarter."</p>
+    <p style="color:var(--ink-lo);font-size:12.5px;font-style:italic;margin-bottom:28px">"It's hard to sell something when the customer expects value only after a year." — The reframe: day-0 value comes from connecting data + listener + existing models.</p>
 
-    <!-- Meta Ads Activity Log -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px"><span style="color:#4267B2">f</span> Meta Ads — Activity Log</h3>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr><th>Timestamp</th><th>Actor</th><th>Object Type</th><th>Object Name</th><th>Event</th><th>Field Changed</th><th>Old Value</th><th>New Value</th></tr></thead>
-        <tbody>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 14:32</td><td>Alon Haze</td><td>AD_SET</td><td>Summer Sale 2026 - Retargeting</td><td>Updated Budget</td><td style="color:var(--signal)">daily_budget</td><td>$50.00</td><td style="color:var(--teal)">$85.00</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 09:15</td><td>Alon Haze</td><td>CAMPAIGN</td><td>Brand Awareness - Lookalike US</td><td>Updated Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">PAUSED</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 22:05</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD</td><td>DPA - Product Catalog Carousel</td><td>Created Ad</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 18:10</td><td>Alon Haze</td><td>AD_CREATIVE</td><td>Carousel - Summer Products</td><td>Updated Creative</td><td style="color:var(--signal)">body</td><td>Shop our spring collection!</td><td style="color:var(--teal)">Shop our summer collection!</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 15:45</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD_SET</td><td>Prospecting - Interest Based</td><td>Updated Targeting</td><td style="color:var(--signal)">targeting.interests</td><td>[Fashion]</td><td style="color:var(--teal)">[Fashion, Outdoor Sports]</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 11:20</td><td>Gur Dotan</td><td>CAMPAIGN</td><td>Conversions - CAPI Optimized</td><td>Created Campaign</td><td>—</td><td>—</td><td>—</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 20:30</td><td>Alon Haze</td><td>CUSTOM_AUDIENCE</td><td>Website Visitors 30d</td><td>Updated Audience</td><td style="color:var(--signal)">retention_days</td><td>14</td><td style="color:var(--teal)">30</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 16:00</td><td style="color:var(--ink-lo)">System</td><td>AD</td><td>Video Ad - Brand Story</td><td>Updated Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">DISAPPROVED</td></tr>
-        </tbody>
-      </table>
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:var(--signal);color:#1a0c02">H0</div><div class="tl-bar" style="background:linear-gradient(var(--signal),var(--teal))"></div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Hour 0 — Connect &amp; Immediate Value</h3>
+        <div class="tl-tag" style="color:var(--signal)">NO DATA NEEDED · PUBLIC SOURCES ONLY</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">1.</span><span><b style="color:var(--ink-hi)">Brand Brief</b> — Crawl site + pull competitor ads from public libraries. Draft mission, voice, ICP.</span></div>
+          <div class="tl-item"><span class="tl-n">2.</span><span><b style="color:var(--ink-hi)">Competitive Intel</b> — Who's running what, open lanes, white space. Works purely from public data.</span></div>
+          <div class="tl-item"><span class="tl-n">3.</span><span><b style="color:var(--ink-hi)">Connect</b> — Auth Google Ads + Meta. APIs return 30 days on first call.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--teal)">Value: brand positioning, competitive landscape, creative white space</div>
+      </div>
     </div>
 
-    <!-- Google Ads Change Events -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px"><span style="color:#4285F4">G</span> Google Ads — Change Events</h3>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr><th>Timestamp</th><th>Actor</th><th>Client</th><th>Object Type</th><th>Object Name</th><th>Operation</th><th>Changed Fields</th><th>Old Value</th><th>New Value</th></tr></thead>
-        <tbody>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 16:45</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>AD_GROUP</td><td>Brand Keywords - Exact Match [High Intent]</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros, name</td><td>$1.50 / old name</td><td style="color:var(--teal)">$2.25 / new name</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 11:20</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">campaign_budget</td><td>Budget 99001122</td><td style="color:var(--teal)">Budget 99003344</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 08:55</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>AD_GROUP_AD</td><td>RSA - Official Salesforce CRM</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">3 headlines, 2 descriptions</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 07:30</td><td>gdotan@salesforce.com</td><td>Web UI</td><td>KEYWORD</td><td>salesforce crm pricing</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Exact match, bid $3.50</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 19:10</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ENABLED</td><td style="color:var(--bad)">PAUSED</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 14:22</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>AD_GROUP</td><td>Competitor Keywords - Broad</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros</td><td>$4.20</td><td style="color:var(--teal)">$3.80</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 10:05</td><td>gdotan@salesforce.com</td><td>Web UI</td><td>CAMPAIGN</td><td>Performance Max - Lead Gen</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Maximize conversions</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-20 23:00</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>ASSET</td><td>Sitelink - Free Trial</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">"Start Free Trial" sitelink</td></tr>
-        </tbody>
-      </table>
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:var(--teal);color:#04211d">2m</div><div class="tl-bar" style="background:var(--teal)"></div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Minute 2 — 30-Day Backfill Complete</h3>
+        <div class="tl-tag" style="color:var(--teal)">ACCOUNT DATA LOADED · MODELS CAN RUN</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">4.</span><span><b style="color:var(--ink-hi)">Instant Audit</b> — 10 findings (tracking gaps, waste, overlap, fatigue). Under 90 seconds.</span></div>
+          <div class="tl-item"><span class="tl-n">5.</span><span><b style="color:var(--ink-hi)">Budget Optimization</b> — Pacing issues, overspend alerts, reallocation suggestions.</span></div>
+          <div class="tl-item"><span class="tl-n">6.</span><span><b style="color:var(--ink-hi)">Peer Benchmarks</b> — CPA/ROAS vs privacy-safe peer cohort.</span></div>
+          <div class="tl-item"><span class="tl-n">7.</span><span><b style="color:var(--ink-hi)">First Decisions</b> — 6 executable recommendations with one-click apply.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--teal)">Value: full audit + 6 decisions + benchmarks — no corpus required</div>
+      </div>
     </div>
 
-    <!-- Unified View -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">🔗 Unified View (Both Platforms Combined)</h3>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr><th>Timestamp</th><th>Platform</th><th>Actor</th><th>Entity Type</th><th>Entity Name</th><th>Op</th><th>Field</th><th>Old</th><th>New</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 16:45</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Ad Group</td><td>Brand Keywords [High Intent]</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros</td><td>$1.50</td><td style="color:var(--teal)">$2.25</td><td style="color:var(--ink-lo)">Also renamed</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 14:32</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Ad Set</td><td>Summer Sale - Retargeting</td><td>UPDATE</td><td style="color:var(--signal)">daily_budget</td><td>$50.00</td><td style="color:var(--teal)">$85.00</td><td style="color:var(--ink-lo)">+70% increase</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 11:20</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Campaign</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">budget</td><td>Budget A</td><td style="color:var(--teal)">Budget B</td><td style="color:var(--ink-lo)">Budget resource swap</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 09:15</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Campaign</td><td>Brand Awareness - Lookalike US</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ACTIVE</td><td style="color:var(--bad)">PAUSED</td><td style="color:var(--ink-lo)">Manual pause</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 22:05</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">Marketing Bot</td><td>Ad</td><td>DPA - Product Catalog Carousel</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">API automation</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 18:10</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Ad Creative</td><td>Carousel - Summer Products</td><td>UPDATE</td><td style="color:var(--signal)">body</td><td>spring collection</td><td style="color:var(--teal)">summer collection</td><td style="color:var(--ink-lo)">Seasonal update</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 15:45</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">Marketing Bot</td><td>Ad Set</td><td>Prospecting - Interest Based</td><td>UPDATE</td><td style="color:var(--signal)">interests</td><td>Fashion</td><td style="color:var(--teal)">Fashion + Outdoor</td><td style="color:var(--ink-lo)">Expanded targeting</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 08:55</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Ad</td><td>RSA - Official Salesforce CRM</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">3 headlines RSA</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 07:30</td><td><span style="color:#4285F4">Google</span></td><td>gdotan@sf</td><td>Keyword</td><td>salesforce crm pricing</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Exact / $3.50</td><td style="color:var(--ink-lo)">New keyword</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 20:30</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Audience</td><td>Website Visitors 30d</td><td>UPDATE</td><td style="color:var(--signal)">retention</td><td>14 days</td><td style="color:var(--teal)">30 days</td><td style="color:var(--ink-lo)">Extended window</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 19:10</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Campaign</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ENABLED</td><td style="color:var(--bad)">PAUSED</td><td style="color:var(--ink-lo)">Manual pause</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 16:00</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">System</td><td>Ad</td><td>Video Ad - Brand Story</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ACTIVE</td><td style="color:var(--bad)">DISAPPROVED</td><td style="color:var(--ink-lo)">Policy violation</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 14:22</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Ad Group</td><td>Competitor Keywords - Broad</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid</td><td>$4.20</td><td style="color:var(--teal)">$3.80</td><td style="color:var(--ink-lo)">Auto bid rule</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 10:05</td><td><span style="color:#4285F4">Google</span></td><td>gdotan@sf</td><td>Campaign</td><td>Performance Max - Lead Gen</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">New PMax campaign</td></tr>
-          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-20 23:00</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Asset</td><td>Sitelink - Free Trial</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">Account-level asset</td></tr>
-        </tbody>
-      </table>
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:var(--teal);color:#04211d">D1</div><div class="tl-bar" style="background:var(--teal)"></div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Day 1 — Listener Mode Active</h3>
+        <div class="tl-tag" style="color:var(--teal)">PASSIVELY OBSERVING · NO USER EFFORT</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">8.</span><span><b style="color:var(--ink-hi)">Decision Detection</b> — Field diffs hourly. Every change captured + classified into 16 types.</span></div>
+          <div class="tl-item"><span class="tl-n">9.</span><span><b style="color:var(--ink-hi)">Listener-seeded value</b> — Before any confirmation: anomaly alerts, change-velocity reporting.</span></div>
+          <div class="tl-item"><span class="tl-n">10.</span><span><b style="color:var(--ink-hi)">Basic MMM</b> — Channel-level spend + outcomes → marginal returns, diminishing returns.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--teal)">Value: passive change tracking + anomaly detection + media mix</div>
+      </div>
     </div>
 
-    <!-- Schema Reference -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">Schema Reference</h3>
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:var(--teal);color:#04211d">D7</div><div class="tl-bar" style="background:var(--teal)"></div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Day 7 — First Outcome Signals</h3>
+        <div class="tl-tag" style="color:var(--teal)">DECISIONS MEASURED · PATTERNS EMERGING</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">11.</span><span><b style="color:var(--ink-hi)">Outcome attribution</b> — 7-day outcome metrics on week-1 decisions. "You paused that → here's what happened."</span></div>
+          <div class="tl-item"><span class="tl-n">12.</span><span><b style="color:var(--ink-hi)">First weekly prompt</b> — Confirm/reject + add intent. Journal starts filling (5 min/week).</span></div>
+          <div class="tl-item"><span class="tl-n">13.</span><span><b style="color:var(--ink-hi)">Velocity metrics</b> — "12 decisions this week: 3 budget, 4 bid, 2 pauses." Per type/person/day.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--teal)">Value: decision-outcome links + team patterns + first journal entries</div>
+      </div>
+    </div>
+
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:linear-gradient(135deg,var(--teal),var(--signal));color:#04211d">D14</div><div class="tl-bar" style="background:var(--signal)"></div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Day 14 — Prediction Unlocks</h3>
+        <div class="tl-tag" style="color:var(--signal)">ENOUGH DECISIONS TO START PREDICTING</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">14.</span><span><b style="color:var(--ink-hi)">Timing predictions</b> — "Last time CTR dropped below 1.2% you refreshed within 48h. That's approaching."</span></div>
+          <div class="tl-item"><span class="tl-n">15.</span><span><b style="color:var(--ink-hi)">Intent clustering</b> — "60% EFFICIENCY, 25% GROWTH, 15% REACTIVE" — recommendations calibrate to style.</span></div>
+          <div class="tl-item"><span class="tl-n">16.</span><span><b style="color:var(--ink-hi)">Owned media layers in</b> — CRM, web analytics, email. Attribution deepens beyond platform last-click.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--signal)">Value: predictive alerts + decision-style profiling + deeper attribution</div>
+      </div>
+    </div>
+
+    <div class="tl-step">
+      <div class="tl-line"><div class="tl-dot" style="background:var(--signal);color:#1a0c02">D30</div></div>
+      <div class="tl-content">
+        <h3 style="font-size:16px">Day 30 — Proactive Recommendations</h3>
+        <div class="tl-tag" style="color:var(--signal)">FULL LOOP ACTIVE · DECISION RESERVOIR EXISTS</div>
+        <div class="tl-box">
+          <div class="tl-item"><span class="tl-n">17.</span><span><b style="color:var(--ink-hi)">Proactive suggestions</b> — "Based on your patterns: CPA rising 5 days → you pause and reallocate. Happening now."</span></div>
+          <div class="tl-item"><span class="tl-n">18.</span><span><b style="color:var(--ink-hi)">Decision-outcome scoring</b> — "BUDGET_REALLOCATE: 72% positive. BID_ADJUST: 41% — let the model handle bids."</span></div>
+          <div class="tl-item"><span class="tl-n">19.</span><span><b style="color:var(--ink-hi)">Calibrated MMM</b> — 60 days data + decision context. "That spike wasn't a channel problem, it was a test."</span></div>
+          <div class="tl-item"><span class="tl-n">20.</span><span><b style="color:var(--ink-hi)">Self-healing pipeline</b> — Recurring issues auto-remediate from confirmed playbooks.</span></div>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--signal)">Value: predict → suggest → execute → measure → learn. The reservoir is the moat.</div>
+      </div>
+    </div>
+
+    <h2>Models — Day-0 Ready (No Corpus Required)</h2>
     <table>
-      <thead><tr><th>Column</th><th>Description</th></tr></thead>
+      <thead><tr><th>Model</th><th>Available</th><th>Input</th><th>Delivers</th></tr></thead>
       <tbody>
-        <tr><td style="color:var(--teal)">timestamp</td><td>ISO 8601 UTC</td></tr>
-        <tr><td style="color:var(--teal)">platform</td><td>Google Ads / Meta Ads</td></tr>
-        <tr><td style="color:var(--teal)">actor</td><td>Who made the change (email or name)</td></tr>
-        <tr><td style="color:var(--teal)">entity_type</td><td>Normalized type (Campaign, Ad Group/Ad Set, Ad, Keyword, Asset, Audience)</td></tr>
-        <tr><td style="color:var(--teal)">operation</td><td>CREATE / UPDATE / REMOVE</td></tr>
-        <tr><td style="color:var(--teal)">field</td><td>Which field was modified</td></tr>
-        <tr><td style="color:var(--teal)">old / new</td><td>Before and after values</td></tr>
-        <tr><td style="color:var(--teal)">notes</td><td>Context</td></tr>
+        <tr><td><b>Budget Optimization</b></td><td style="color:var(--teal)">Hour 0</td><td>30d spend + conversions</td><td>Pacing, overspend, reallocation</td></tr>
+        <tr><td><b>Statistical Benchmarks</b></td><td style="color:var(--teal)">Hour 0</td><td>Blended CPA/ROAS</td><td>Peer comparison</td></tr>
+        <tr><td><b>Creative Fatigue</b></td><td style="color:var(--teal)">Hour 0</td><td>Frequency + CTR trend</td><td>Burnout detection</td></tr>
+        <tr><td><b>Audience Overlap</b></td><td style="color:var(--teal)">Hour 0</td><td>Targeting specs + reach</td><td>Competing ad sets</td></tr>
+        <tr><td><b>Waste Identification</b></td><td style="color:var(--teal)">Hour 0</td><td>Search terms + placements</td><td>Non-converting spend</td></tr>
+        <tr><td><b>Media Mix (basic)</b></td><td style="color:var(--teal)">Day 1</td><td>Channel daily spend + outcomes</td><td>Marginal returns, allocation</td></tr>
+        <tr><td><b>MMM (calibrated)</b></td><td style="color:var(--signal)">Day 30</td><td>60d + decision context</td><td>Full mix with corrections</td></tr>
+        <tr><td><b>Decision Prediction</b></td><td style="color:var(--signal)">Day 14+</td><td>15+ confirmed w/ intent</td><td>Predict when/what next</td></tr>
       </tbody>
     </table>
 
-    <!-- Money Conversion -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px">Money Conversion Reference</h3>
-    <table>
-      <thead><tr><th>Platform</th><th>Raw Format</th><th>Example</th><th>Actual USD</th></tr></thead>
-      <tbody>
-        <tr><td>Google Ads</td><td>Micros</td><td style="font-family:'IBM Plex Mono';color:var(--ink-mid)">2250000</td><td style="color:var(--teal)">$2.25</td></tr>
-        <tr><td>Meta Ads</td><td>Cents</td><td style="font-family:'IBM Plex Mono';color:var(--ink-mid)">8500</td><td style="color:var(--teal)">$85.00</td></tr>
-      </tbody>
-    </table>
-
-    <!-- How Signal uses this -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">How Signal Uses Change Reports</h3>
-    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-size:13.5px;color:var(--ink-mid);line-height:1.8">
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px">
-        <span style="color:var(--teal);font-weight:600">1.</span><span><b style="color:var(--ink-hi)">Ingest</b> — Pull change events from Google Ads Change History &amp; Meta Activity Log APIs every hour</span>
-        <span style="color:var(--teal);font-weight:600">2.</span><span><b style="color:var(--ink-hi)">Normalize</b> — Map platform-specific schemas into the unified view (entity_type, field, old/new)</span>
-        <span style="color:var(--teal);font-weight:600">3.</span><span><b style="color:var(--ink-hi)">Filter</b> — Separate human actors (Web UI / named users) from automated (API service / bots / System)</span>
-        <span style="color:var(--teal);font-weight:600">4.</span><span><b style="color:var(--ink-hi)">Classify</b> — Map each change to one of the 16 decision types based on field + operation</span>
-        <span style="color:var(--teal);font-weight:600">5.</span><span><b style="color:var(--ink-hi)">Score</b> — Calculate confidence (was it intentional?) and importance (does it matter?)</span>
-        <span style="color:var(--teal);font-weight:600">6.</span><span><b style="color:var(--ink-hi)">Present</b> — Surface to user for confirmation in the Decision Tracker</span>
-      </div>
-    </div>
-
-    <!-- Confidence application to this data -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Applied to These Events</h3>
-    <table>
-      <thead><tr><th>Event</th><th>Actor</th><th>Confidence</th><th>Rationale</th></tr></thead>
-      <tbody>
-        <tr><td>Budget $50→$85 (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.94</td><td>Named human, business hours, round-ish number (+70%)</td></tr>
-        <tr><td>Campaign PAUSED (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.96</td><td>Named human, status toggle, morning hours</td></tr>
-        <tr><td>DPA Carousel created (Meta)</td><td style="color:var(--ink-lo)">Marketing Bot</td><td style="color:var(--signal)">0.38</td><td>Bot actor, late night — filtered out as automated</td></tr>
-        <tr><td>Interest expanded (Meta)</td><td style="color:var(--ink-lo)">Marketing Bot</td><td style="color:var(--signal)">0.42</td><td>Bot actor — likely rule-based expansion</td></tr>
-        <tr><td>CPC bid $1.50→$2.25 (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.91</td><td>Web UI, named user, +50% round increase</td></tr>
-        <tr><td>Budget resource swap (Google)</td><td style="color:var(--ink-lo)">api-service</td><td style="color:var(--signal)">0.52</td><td>API actor, but budget swap suggests manual trigger</td></tr>
-        <tr><td>Campaign PAUSED (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.97</td><td>Web UI, named user, status toggle — classic manual action</td></tr>
-        <tr><td>Bid $4.20→$3.80 (Google)</td><td style="color:var(--ink-lo)">api-service</td><td style="color:var(--signal)">0.48</td><td>API actor, fractional values — likely automated bid rule</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- DAY-0 → DAY-30 VALUE TIMELINE -->
-  <div class="section" style="margin-top:60px">
-    <h2 style="color:var(--signal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">🗓 Day-0 → Day-30 Value Timeline</h2>
-    <p style="color:var(--ink-mid);margin-bottom:12px">What the customer gets, when they get it — before the decision reservoir exists. No empty dashboards, no "check back in a quarter."</p>
-    <p style="color:var(--ink-lo);font-size:13px;margin-bottom:32px;font-style:italic">"It's hard to sell something when the customer expects to get value only after a year." — The reframe: day-0 value comes from connecting data + listener + existing models. No user input required.</p>
-
-    <!-- HOUR 0 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--signal);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#1a0c02">H0</div>
-        <div style="width:2px;flex:1;background:linear-gradient(var(--signal),var(--teal))"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Hour 0 — Connect &amp; Immediate Value</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--signal);margin-bottom:12px">NO DATA NEEDED FROM CUSTOMER · PUBLIC SOURCES ONLY</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">1.</span><span><b style="color:var(--ink-hi)">Brand Brief (from site + public ads)</b> — Crawl customer's website, pull competitor ads from Meta Ad Library &amp; Google Transparency Center. Draft mission, voice, ICP, differentiation. Zero account access needed.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">2.</span><span><b style="color:var(--ink-hi)">Competitive Intel</b> — Who's running what, where, with what angles. Open lanes and white space identified. (The "Adidas→Nike/Reebok top-of-funnel" idea — works purely from public data.)</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">3.</span><span><b style="color:var(--ink-hi)">Connect paid media</b> — Authenticate Google Ads + Meta. APIs hand back 30 days of history on first call.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal)">Value delivered: brand positioning, competitive landscape, creative white space — before any number is ingested</div>
-      </div>
-    </div>
-
-    <!-- MINUTE 2 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#04211d">2m</div>
-        <div style="width:2px;flex:1;background:linear-gradient(var(--teal),var(--teal))"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Minute 2 — 30-Day Backfill Complete</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal);margin-bottom:12px">ACCOUNT DATA NOW LOADED · MODELS CAN RUN</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">4.</span><span><b style="color:var(--ink-hi)">Instant Audit</b> — 10 findings across Google + Meta (tracking gaps, waste, overlap, fatigue). Actionable in under 90 seconds.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">5.</span><span><b style="color:var(--ink-hi)">Budget Optimization Models</b> — Run on 30 days of spend/conversion data. Identify pacing issues (+14% overspend projected), suggest reallocation. No decision history needed.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">6.</span><span><b style="color:var(--ink-hi)">Statistical Benchmarks</b> — Compare CPA, ROAS, impression share against privacy-safe peer cohort. The one number a single account can't see alone.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">7.</span><span><b style="color:var(--ink-hi)">First Decisions</b> — 6 actionable recommendations with execute buttons. Fix tracking, add negatives, exclude brand from PMax, refresh creative, etc.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal)">Value delivered: full account health audit + 6 executable decisions + benchmark positioning — no decision corpus required</div>
-      </div>
-    </div>
-
-    <!-- DAY 1 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#04211d">D1</div>
-        <div style="width:2px;flex:1;background:linear-gradient(var(--teal),var(--teal))"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Day 1 — Listener Mode Active</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal);margin-bottom:12px">PASSIVELY OBSERVING · NO USER EFFORT REQUIRED</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">8.</span><span><b style="color:var(--ink-hi)">Decision Detection begins</b> — Field-level diffs run hourly. Every budget change, bid switch, pause, creative upload, audience edit is captured and classified into the 16 types.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">9.</span><span><b style="color:var(--ink-hi)">Listener-seeded value (no intent needed)</b> — Even BEFORE the user confirms or explains anything, Signal knows: what changed, when, on which entity, how big, how disruptive. This alone powers anomaly alerts and change-velocity reporting.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">10.</span><span><b style="color:var(--ink-hi)">MMM / Media Mix Models</b> — With 30 days of channel-level spend + outcome data, basic media mix decomposition runs. Shows channel marginal returns, diminishing-returns curves, and reallocation opportunities. No decision corpus needed.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal)">Value delivered: passive change tracking + anomaly detection + media mix signals — user does nothing</div>
-      </div>
-    </div>
-
-    <!-- DAY 7 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#04211d">D7</div>
-        <div style="width:2px;flex:1;background:linear-gradient(var(--teal),var(--teal))"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Day 7 — First Outcome Signals</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal);margin-bottom:12px">DECISIONS MEASURED · PATTERNS EMERGING</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">11.</span><span><b style="color:var(--ink-hi)">Outcome attribution</b> — Decisions detected in the first week now have 7-day outcome metrics. "You paused that campaign → here's what happened to the account." Fills outcome_metrics retroactively.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">12.</span><span><b style="color:var(--ink-hi)">First weekly prompt</b> — User sees detected decisions, confirms/rejects, adds intent. The decision journal starts filling. This is low-effort (5 min/week) but high-signal for the model.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--teal);font-weight:700;min-width:18px">13.</span><span><b style="color:var(--ink-hi)">Decision velocity metrics</b> — "Your team made 12 decisions this week. 3 were budget, 4 were bid, 2 were pauses." Change velocity per type, per person, per day-of-week.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--teal)">Value delivered: decision-outcome links + team activity patterns + first confirmed journal entries</div>
-      </div>
-    </div>
-
-    <!-- DAY 14 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--signal));display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#04211d">D14</div>
-        <div style="width:2px;flex:1;background:linear-gradient(var(--signal),var(--signal))"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Day 14 — Prediction Unlocks</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--signal);margin-bottom:12px">ENOUGH CONFIRMED DECISIONS TO START PREDICTING</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">14.</span><span><b style="color:var(--ink-hi)">Timing predictions</b> — "Last time CTR dropped below 1.2% on a creative, you refreshed it within 48h. That threshold is approaching on 'Summer Carousel'." Signal predicts WHEN you'll want to act.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">15.</span><span><b style="color:var(--ink-hi)">Intent-category clustering</b> — With 15-25 enriched decisions, the system identifies your team's decision patterns: "60% EFFICIENCY, 25% GROWTH, 15% REACTIVE". Starts calibrating recommendations to your style.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">16.</span><span><b style="color:var(--ink-hi)">Owned media integration begins</b> — CRM, web analytics, email data layers in. Attribution deepens beyond platform last-click. LTV signals start feeding into budget models.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--signal)">Value delivered: predictive alerts ("this is about to need attention") + decision-style profiling + deeper attribution</div>
-      </div>
-    </div>
-
-    <!-- DAY 30 -->
-    <div style="display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:0">
-      <div style="display:flex;flex-direction:column;align-items:center">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--signal);display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#1a0c02">D30</div>
-        <div style="width:2px;height:20px;background:var(--signal)"></div>
-      </div>
-      <div style="padding-bottom:32px">
-        <h3 style="font-family:'Space Grotesk';font-size:17px;color:var(--ink-hi);margin-bottom:4px">Day 30 — Proactive Recommendations</h3>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--signal);margin-bottom:12px">DECISION RESERVOIR EXISTS · FULL LOOP ACTIVE</div>
-        <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-mid)">
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">17.</span><span><b style="color:var(--ink-hi)">Proactive decision suggestions</b> — "Based on your patterns: when CPA rises 20%+ for 5 days, you typically pause and reallocate. That's happening now on 'Display Q2'. Pause and shift $40/day to Prospecting?" — with one-click execute.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">18.</span><span><b style="color:var(--ink-hi)">Decision-outcome scoring</b> — "Your BUDGET_REALLOCATE decisions have a 72% positive-outcome rate. Your BID_ADJUST decisions only 41% — consider letting the model handle bids." Data-driven self-awareness.</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">19.</span><span><b style="color:var(--ink-hi)">Full MMM + decision corpus</b> — Media mix model now calibrated with 60 days of data (30 backfill + 30 live). Decision context improves its accuracy — "that CPA spike wasn't a channel problem, it was a deliberate audience test."</span></div>
-            <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--signal);font-weight:700;min-width:18px">20.</span><span><b style="color:var(--ink-hi)">Self-healing pipeline</b> — Recurring issues (tracking gaps, fatigue thresholds, pacing overruns) now auto-remediate based on confirmed playbooks from your decision history.</span></div>
-          </div>
-        </div>
-        <div style="font-family:'IBM Plex Mono';font-size:11px;color:var(--signal)">Value delivered: the full MI loop — predict, suggest, execute, measure, learn. The decision reservoir is now the competitive moat.</div>
-      </div>
-    </div>
-
-    <!-- EXISTING MODELS (DAY-0 READY) -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">Existing Models — Day-0 Ready (No Decision Corpus Required)</h3>
-    <p style="color:var(--ink-mid);margin-bottom:16px">These models deliver value the moment paid media is connected. They run on account data alone:</p>
-    <table>
-      <thead><tr><th>Model</th><th>Available</th><th>Input</th><th>What it delivers</th></tr></thead>
-      <tbody>
-        <tr><td><b style="color:var(--ink-hi)">Budget Optimization</b></td><td style="color:var(--teal)">Hour 0</td><td>30 days spend + conversions per campaign</td><td>Pacing forecasts, overspend alerts, reallocation suggestions between campaigns</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Statistical Benchmarks</b></td><td style="color:var(--teal)">Hour 0</td><td>Blended CPA/ROAS from connected accounts</td><td>"You're +38% above apparel-DTC peers" — privacy-safe peer comparison</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Creative Fatigue Model</b></td><td style="color:var(--teal)">Hour 0</td><td>Frequency + CTR trend per ad_id</td><td>Detect when a creative is burning out before CTR collapses (14-day slope)</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Audience Overlap Detection</b></td><td style="color:var(--teal)">Hour 0</td><td>Ad set targeting specs + reach/frequency</td><td>Find ad sets competing against each other + learning-phase stalls</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Waste Identification</b></td><td style="color:var(--teal)">Hour 0</td><td>Search terms + placement breakdowns</td><td>Non-converting queries, zero-return placements, PMax brand cannibalization</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Media Mix Model (basic)</b></td><td style="color:var(--teal)">Day 1</td><td>Channel-level daily spend + outcomes</td><td>Marginal return curves, diminishing returns, optimal channel allocation</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">MMM (calibrated)</b></td><td style="color:var(--signal)">Day 30</td><td>60 days data + decision context</td><td>Full media mix with decision-aware corrections (tests vs real performance)</td></tr>
-        <tr><td><b style="color:var(--ink-hi)">Decision Prediction</b></td><td style="color:var(--signal)">Day 14+</td><td>15+ confirmed decisions with intent</td><td>Predict when/what decision will be needed based on learned patterns</td></tr>
-      </tbody>
-    </table>
-
-    <!-- VALUE SUMMARY -->
-    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">Value Summary — Two States</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-      <div style="background:var(--panel-2);border:1px solid var(--teal-dim);border-radius:12px;padding:20px">
-        <div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:var(--teal);margin-bottom:10px">Empty State (Day 0)</div>
-        <div style="font-size:13.5px;color:var(--ink-mid);line-height:1.7">
-          • Brand brief from public sources<br>
-          • Competitive intel (no account access)<br>
-          • Full account audit (10 findings)<br>
-          • 6 executable decisions<br>
-          • Budget optimization + pacing<br>
-          • Peer benchmarks<br>
-          • Listener mode (passive detection)<br>
-          <b style="color:var(--teal);display:block;margin-top:10px">Customer gets value in the first 5 minutes.</b>
+    <h2>Two States — Value Summary</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div style="background:var(--panel-2);border:1px solid var(--teal-dim);border-radius:12px;padding:18px">
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--teal);margin-bottom:8px">Empty State (Day 0)</div>
+        <div style="font-size:13px;color:var(--ink-mid);line-height:1.7">
+          Brand brief + competitive intel<br>Full audit (10 findings)<br>6 executable decisions<br>Budget optimization + pacing<br>Peer benchmarks<br>Listener mode (passive)<br>
+          <b style="color:var(--teal);display:block;margin-top:8px">Value in the first 5 minutes.</b>
         </div>
       </div>
-      <div style="background:var(--panel-2);border:1px solid var(--signal-dim);border-radius:12px;padding:20px">
-        <div style="font-family:'Space Grotesk';font-weight:700;font-size:16px;color:var(--signal);margin-bottom:10px">Mature State (Day 30+)</div>
-        <div style="font-size:13.5px;color:var(--ink-mid);line-height:1.7">
-          • Everything from day 0, plus:<br>
-          • Proactive decision suggestions<br>
-          • Timing predictions<br>
-          • Decision-outcome scoring<br>
-          • Calibrated MMM<br>
-          • Self-healing pipelines<br>
-          • Intent-based personalization<br>
-          <b style="color:var(--signal);display:block;margin-top:10px">The decision reservoir becomes the moat.</b>
+      <div style="background:var(--panel-2);border:1px solid var(--signal-dim);border-radius:12px;padding:18px">
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--signal);margin-bottom:8px">Mature State (Day 30+)</div>
+        <div style="font-size:13px;color:var(--ink-mid);line-height:1.7">
+          Everything from day 0, plus:<br>Proactive suggestions<br>Timing predictions<br>Decision-outcome scoring<br>Calibrated MMM<br>Self-healing pipelines<br>
+          <b style="color:var(--signal);display:block;margin-top:8px">The reservoir becomes the moat.</b>
         </div>
       </div>
     </div>
 
-    <div style="background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:18px;font-size:13px;color:var(--ink-lo)">
-      <b style="color:var(--ink-mid)">Constraint respected:</b> Day-0 value comes entirely from (1) connecting the customer's own accounts, (2) public competitive data, and (3) existing statistical models. No cross-customer data usage (Datorama-history shortcut is off the table). We listen within a single customer's own data only.
+    <div style="margin-top:20px;background:var(--panel);border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:12px;color:var(--ink-lo)">
+      <b style="color:var(--ink-mid)">Constraint:</b> Day-0 value comes from (1) customer's own accounts, (2) public competitive data, (3) existing models. No cross-customer data. We listen within a single customer's data only.
     </div>
   </div>
 
-  <div style="margin-top:40px;text-align:center;padding:20px;border-top:1px solid var(--line)">
-    <a href="tracker.html" class="nav-link" style="margin-right:12px">← Decision Tracker Demo</a>
-    <a href="index.html" class="nav-link">Day Zero Audit Flow →</a>
-  </div>
 </div>
+
+<div class="foot">SIGNAL · Decision Intelligence Documentation</div>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('.tab');
+  var panels=document.querySelectorAll('.tab-panel');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click',function(){
+      tabs.forEach(function(t){t.classList.remove('active')});
+      panels.forEach(function(p){p.classList.remove('active')});
+      tab.classList.add('active');
+      document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+      window.scrollTo(0,0);
+    });
+  });
+})();
+</script>
 </body>
 </html>
