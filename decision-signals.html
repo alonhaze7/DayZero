@@ -735,6 +735,128 @@
     </table>
   </div>
 
+  <!-- AD PLATFORM CHANGE REPORTS -->
+  <div class="section" style="margin-top:60px">
+    <h2 style="color:var(--teal);font-family:'Space Grotesk';font-size:24px;margin-bottom:8px">📊 Ad Platform Change Reports</h2>
+    <p style="color:var(--ink-mid);margin-bottom:28px">Real change events from Google Ads &amp; Meta Ads APIs. This is the raw data Signal ingests, diffs, and classifies into the 16 decision types.</p>
+
+    <!-- Meta Ads Activity Log -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px"><span style="color:#4267B2">f</span> Meta Ads — Activity Log</h3>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Timestamp</th><th>Actor</th><th>Object Type</th><th>Object Name</th><th>Event</th><th>Field Changed</th><th>Old Value</th><th>New Value</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 14:32</td><td>Alon Haze</td><td>AD_SET</td><td>Summer Sale 2026 - Retargeting</td><td>Updated Budget</td><td style="color:var(--signal)">daily_budget</td><td>$50.00</td><td style="color:var(--teal)">$85.00</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 09:15</td><td>Alon Haze</td><td>CAMPAIGN</td><td>Brand Awareness - Lookalike US</td><td>Updated Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">PAUSED</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 22:05</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD</td><td>DPA - Product Catalog Carousel</td><td>Created Ad</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 18:10</td><td>Alon Haze</td><td>AD_CREATIVE</td><td>Carousel - Summer Products</td><td>Updated Creative</td><td style="color:var(--signal)">body</td><td>Shop our spring collection!</td><td style="color:var(--teal)">Shop our summer collection!</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 15:45</td><td style="color:var(--ink-lo)">Marketing Bot</td><td>AD_SET</td><td>Prospecting - Interest Based</td><td>Updated Targeting</td><td style="color:var(--signal)">targeting.interests</td><td>[Fashion]</td><td style="color:var(--teal)">[Fashion, Outdoor Sports]</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 11:20</td><td>Gur Dotan</td><td>CAMPAIGN</td><td>Conversions - CAPI Optimized</td><td>Created Campaign</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 20:30</td><td>Alon Haze</td><td>CUSTOM_AUDIENCE</td><td>Website Visitors 30d</td><td>Updated Audience</td><td style="color:var(--signal)">retention_days</td><td>14</td><td style="color:var(--teal)">30</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 16:00</td><td style="color:var(--ink-lo)">System</td><td>AD</td><td>Video Ad - Brand Story</td><td>Updated Status</td><td style="color:var(--signal)">effective_status</td><td>ACTIVE</td><td style="color:var(--bad)">DISAPPROVED</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Google Ads Change Events -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px"><span style="color:#4285F4">G</span> Google Ads — Change Events</h3>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Timestamp</th><th>Actor</th><th>Client</th><th>Object Type</th><th>Object Name</th><th>Operation</th><th>Changed Fields</th><th>Old Value</th><th>New Value</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 16:45</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>AD_GROUP</td><td>Brand Keywords - Exact Match [High Intent]</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros, name</td><td>$1.50 / old name</td><td style="color:var(--teal)">$2.25 / new name</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 11:20</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">campaign_budget</td><td>Budget 99001122</td><td style="color:var(--teal)">Budget 99003344</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 08:55</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>AD_GROUP_AD</td><td>RSA - Official Salesforce CRM</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">3 headlines, 2 descriptions</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 07:30</td><td>gdotan@salesforce.com</td><td>Web UI</td><td>KEYWORD</td><td>salesforce crm pricing</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Exact match, bid $3.50</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 19:10</td><td>ahaze@salesforce.com</td><td>Web UI</td><td>CAMPAIGN</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ENABLED</td><td style="color:var(--bad)">PAUSED</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 14:22</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>AD_GROUP</td><td>Competitor Keywords - Broad</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros</td><td>$4.20</td><td style="color:var(--teal)">$3.80</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 10:05</td><td>gdotan@salesforce.com</td><td>Web UI</td><td>CAMPAIGN</td><td>Performance Max - Lead Gen</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Maximize conversions</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-20 23:00</td><td style="color:var(--ink-lo)">api-service@...iam</td><td>API</td><td>ASSET</td><td>Sitelink - Free Trial</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">"Start Free Trial" sitelink</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unified View -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">🔗 Unified View (Both Platforms Combined)</h3>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Timestamp</th><th>Platform</th><th>Actor</th><th>Entity Type</th><th>Entity Name</th><th>Op</th><th>Field</th><th>Old</th><th>New</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 16:45</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Ad Group</td><td>Brand Keywords [High Intent]</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid_micros</td><td>$1.50</td><td style="color:var(--teal)">$2.25</td><td style="color:var(--ink-lo)">Also renamed</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 14:32</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Ad Set</td><td>Summer Sale - Retargeting</td><td>UPDATE</td><td style="color:var(--signal)">daily_budget</td><td>$50.00</td><td style="color:var(--teal)">$85.00</td><td style="color:var(--ink-lo)">+70% increase</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 11:20</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Campaign</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">budget</td><td>Budget A</td><td style="color:var(--teal)">Budget B</td><td style="color:var(--ink-lo)">Budget resource swap</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-23 09:15</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Campaign</td><td>Brand Awareness - Lookalike US</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ACTIVE</td><td style="color:var(--bad)">PAUSED</td><td style="color:var(--ink-lo)">Manual pause</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 22:05</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">Marketing Bot</td><td>Ad</td><td>DPA - Product Catalog Carousel</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">API automation</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 18:10</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Ad Creative</td><td>Carousel - Summer Products</td><td>UPDATE</td><td style="color:var(--signal)">body</td><td>spring collection</td><td style="color:var(--teal)">summer collection</td><td style="color:var(--ink-lo)">Seasonal update</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 15:45</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">Marketing Bot</td><td>Ad Set</td><td>Prospecting - Interest Based</td><td>UPDATE</td><td style="color:var(--signal)">interests</td><td>Fashion</td><td style="color:var(--teal)">Fashion + Outdoor</td><td style="color:var(--ink-lo)">Expanded targeting</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 08:55</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Ad</td><td>RSA - Official Salesforce CRM</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">3 headlines RSA</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-22 07:30</td><td><span style="color:#4285F4">Google</span></td><td>gdotan@sf</td><td>Keyword</td><td>salesforce crm pricing</td><td>CREATE</td><td>—</td><td>—</td><td style="color:var(--teal)">Exact / $3.50</td><td style="color:var(--ink-lo)">New keyword</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 20:30</td><td><span style="color:#4267B2">Meta</span></td><td>Alon Haze</td><td>Audience</td><td>Website Visitors 30d</td><td>UPDATE</td><td style="color:var(--signal)">retention</td><td>14 days</td><td style="color:var(--teal)">30 days</td><td style="color:var(--ink-lo)">Extended window</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 19:10</td><td><span style="color:#4285F4">Google</span></td><td>ahaze@sf</td><td>Campaign</td><td>Display - Remarketing Q2</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ENABLED</td><td style="color:var(--bad)">PAUSED</td><td style="color:var(--ink-lo)">Manual pause</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 16:00</td><td><span style="color:#4267B2">Meta</span></td><td style="color:var(--ink-lo)">System</td><td>Ad</td><td>Video Ad - Brand Story</td><td>UPDATE</td><td style="color:var(--signal)">status</td><td>ACTIVE</td><td style="color:var(--bad)">DISAPPROVED</td><td style="color:var(--ink-lo)">Policy violation</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 14:22</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Ad Group</td><td>Competitor Keywords - Broad</td><td>UPDATE</td><td style="color:var(--signal)">cpc_bid</td><td>$4.20</td><td style="color:var(--teal)">$3.80</td><td style="color:var(--ink-lo)">Auto bid rule</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-21 10:05</td><td><span style="color:#4285F4">Google</span></td><td>gdotan@sf</td><td>Campaign</td><td>Performance Max - Lead Gen</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">New PMax campaign</td></tr>
+          <tr><td class="mono" style="font-size:11px;white-space:nowrap">2026-06-20 23:00</td><td><span style="color:#4285F4">Google</span></td><td style="color:var(--ink-lo)">API Service</td><td>Asset</td><td>Sitelink - Free Trial</td><td>CREATE</td><td>—</td><td>—</td><td>—</td><td style="color:var(--ink-lo)">Account-level asset</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Schema Reference -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:36px 0 12px">Schema Reference</h3>
+    <table>
+      <thead><tr><th>Column</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--teal)">timestamp</td><td>ISO 8601 UTC</td></tr>
+        <tr><td style="color:var(--teal)">platform</td><td>Google Ads / Meta Ads</td></tr>
+        <tr><td style="color:var(--teal)">actor</td><td>Who made the change (email or name)</td></tr>
+        <tr><td style="color:var(--teal)">entity_type</td><td>Normalized type (Campaign, Ad Group/Ad Set, Ad, Keyword, Asset, Audience)</td></tr>
+        <tr><td style="color:var(--teal)">operation</td><td>CREATE / UPDATE / REMOVE</td></tr>
+        <tr><td style="color:var(--teal)">field</td><td>Which field was modified</td></tr>
+        <tr><td style="color:var(--teal)">old / new</td><td>Before and after values</td></tr>
+        <tr><td style="color:var(--teal)">notes</td><td>Context</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Money Conversion -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:28px 0 12px">Money Conversion Reference</h3>
+    <table>
+      <thead><tr><th>Platform</th><th>Raw Format</th><th>Example</th><th>Actual USD</th></tr></thead>
+      <tbody>
+        <tr><td>Google Ads</td><td>Micros</td><td style="font-family:'IBM Plex Mono';color:var(--ink-mid)">2250000</td><td style="color:var(--teal)">$2.25</td></tr>
+        <tr><td>Meta Ads</td><td>Cents</td><td style="font-family:'IBM Plex Mono';color:var(--ink-mid)">8500</td><td style="color:var(--teal)">$85.00</td></tr>
+      </tbody>
+    </table>
+
+    <!-- How Signal uses this -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">How Signal Uses Change Reports</h3>
+    <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:20px;font-size:13.5px;color:var(--ink-mid);line-height:1.8">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px">
+        <span style="color:var(--teal);font-weight:600">1.</span><span><b style="color:var(--ink-hi)">Ingest</b> — Pull change events from Google Ads Change History &amp; Meta Activity Log APIs every hour</span>
+        <span style="color:var(--teal);font-weight:600">2.</span><span><b style="color:var(--ink-hi)">Normalize</b> — Map platform-specific schemas into the unified view (entity_type, field, old/new)</span>
+        <span style="color:var(--teal);font-weight:600">3.</span><span><b style="color:var(--ink-hi)">Filter</b> — Separate human actors (Web UI / named users) from automated (API service / bots / System)</span>
+        <span style="color:var(--teal);font-weight:600">4.</span><span><b style="color:var(--ink-hi)">Classify</b> — Map each change to one of the 16 decision types based on field + operation</span>
+        <span style="color:var(--teal);font-weight:600">5.</span><span><b style="color:var(--ink-hi)">Score</b> — Calculate confidence (was it intentional?) and importance (does it matter?)</span>
+        <span style="color:var(--teal);font-weight:600">6.</span><span><b style="color:var(--ink-hi)">Present</b> — Surface to user for confirmation in the Decision Tracker</span>
+      </div>
+    </div>
+
+    <!-- Confidence application to this data -->
+    <h3 style="color:var(--ink-hi);font-size:16px;margin:32px 0 12px">Confidence Applied to These Events</h3>
+    <table>
+      <thead><tr><th>Event</th><th>Actor</th><th>Confidence</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Budget $50→$85 (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.94</td><td>Named human, business hours, round-ish number (+70%)</td></tr>
+        <tr><td>Campaign PAUSED (Meta)</td><td>Alon Haze</td><td style="color:var(--teal)">0.96</td><td>Named human, status toggle, morning hours</td></tr>
+        <tr><td>DPA Carousel created (Meta)</td><td style="color:var(--ink-lo)">Marketing Bot</td><td style="color:var(--signal)">0.38</td><td>Bot actor, late night — filtered out as automated</td></tr>
+        <tr><td>Interest expanded (Meta)</td><td style="color:var(--ink-lo)">Marketing Bot</td><td style="color:var(--signal)">0.42</td><td>Bot actor — likely rule-based expansion</td></tr>
+        <tr><td>CPC bid $1.50→$2.25 (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.91</td><td>Web UI, named user, +50% round increase</td></tr>
+        <tr><td>Budget resource swap (Google)</td><td style="color:var(--ink-lo)">api-service</td><td style="color:var(--signal)">0.52</td><td>API actor, but budget swap suggests manual trigger</td></tr>
+        <tr><td>Campaign PAUSED (Google)</td><td>ahaze@sf</td><td style="color:var(--teal)">0.97</td><td>Web UI, named user, status toggle — classic manual action</td></tr>
+        <tr><td>Bid $4.20→$3.80 (Google)</td><td style="color:var(--ink-lo)">api-service</td><td style="color:var(--signal)">0.48</td><td>API actor, fractional values — likely automated bid rule</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <div style="margin-top:40px;text-align:center;padding:20px;border-top:1px solid var(--line)">
     <a href="tracker.html" class="nav-link" style="margin-right:12px">← Decision Tracker Demo</a>
     <a href="index.html" class="nav-link">Day Zero Audit Flow →</a>
